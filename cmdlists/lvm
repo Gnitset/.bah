@@ -1,0 +1,9 @@
+lvs
+vgs
+pvs
+vgextend vg /dev/md3
+pvcreate /dev/md4
+lvcreate -L 2048M -v -ndevdomu_slash vg
+lvreduce -L -64M vg/web_slash
+pvdisplay /dev/md3
+lvremove vg/foobar

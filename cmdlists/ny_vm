@@ -1,0 +1,12 @@
+lvcreate -L 3072M -v -nweb_slash vg
+lvcreate -L 512M -v -nweb_swap vg
+mke2fs -j -i 4096 -L web_slash /dev/vg/web_slash
+mkswap /dev/vg/web_swap
+mount /dev/vg/web_slash /mnt/target
+rsync -aH /mnt/dev/ /mnt/target
+sed -i -e 's/localhost/web/g' /mnt/target/etc/conf.d/hostname
+less /mnt/target/etc/conf.d/net /mnt/target/etc/hosts
+rm /mnt/target/etc/ssh/ssh_host_*
+umount /mnt/target
+sed -e 's/DEFAULT/web/g' /etc/xen/DEFAULT.ladan.se > /etc/xen/web.ladan.se
+xm create web.ladan.se -c
