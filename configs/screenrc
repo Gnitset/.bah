@@ -1,0 +1,9 @@
+escape ^Ff
+vbell on
+autodetach on
+startup_message off
+crlf off
+multiuser off				
+defscrollback 2048
+shell -zsh
+pow_detach_msg "Screen session of \$LOGNAME \$:cr:\$:nl:ended."

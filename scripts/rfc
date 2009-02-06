@@ -1,0 +1,262 @@
+#!/usr/bin/env python
+##
+## rfc.py v1.0
+##
+## An easy-to-use rfc browser.
+## Requires Python 2.x
+##
+##
+## Author: Rikard Bosnjakovic <bos@hack.org>, 2001-06-13
+##
+import os, re, sys, time, urllib
+from stat import *
+from types import IntType
+
+rfcbrowsers = ("links", "lynx")
+rfcpagers   = ("less", "more", "cat")
+rfcdir      = os.path.join(os.path.expanduser("~"), ".rfc/")
+rfcindex    = os.path.join(rfcdir + "rfc.index")
+rfcconfig   = os.path.join(rfcdir + "rfcrc")
+rfcurls     = ("http://ftp.sunet.se/pub/Internet-documents/rfc/",
+               "http://www.faqs.org/rfc/",
+               "http://www.isi.edu/in-notes/")
+indexfile   = "rfc-index.txt"
+
+
+# get these values from the config-file
+rfcurl      = 0
+rfcdate     = 0
+
+__version__ = 1.0
+
+# check if the config-dir exists
+def check_config_dir():
+    # create ~/rfc/ if it doesn't exist
+    if not os.path.exists(rfcdir):
+        os.mkdir(rfcdir)
+        print "Created "+rfcdir
+
+
+# check if the config-file exists
+def check_config_file():
+    global rfcurl, rfcdate
+
+    check_config_dir()
+    if not os.path.exists(rfcconfig):
+        print "Created "+rfcconfig
+        rfcurl = rfcurls[0]
+        rfcdate = "0"
+        f = open(rfcconfig, "w")
+        f.write(rfcurl+" "+rfcdate+"\n")
+
+
+# read the config file
+def read_config_file():
+    global rfcurl, rfcdate
+
+    check_config_file()
+    f = open(rfcconfig, "r")
+    l = f.readline().split()
+
+    # the config should only contain two fields, url and time
+    if (not len(l) == 2):
+        print "Broken config-file, creating a new one."
+        os.remove(rfcconfig)
+        check_config_file()
+        return
+
+    (rfcurl, rfcdate) = l
+
+
+# write the config-file
+def write_config_file():
+    global rfcurl, rfcdate
+
+    check_config_dir()
+    f = open(rfcconfig, "w")
+    f.write(rfcurl+" "+rfcdate+"\n")
+
+
+# download the rfc-index
+def download_rfc_index():
+    global rfcdate
+
+    data = urllib.urlopen(rfcurl + indexfile).readlines()
+    rfcre = re.compile(r'^[0-9]+? .*$')
+    indexdata = ""
+    for i in data:
+        match = rfcre.search(i)
+        if match:
+            indexdata += i
+
+    f = open(rfcindex, "w")
+    f.write(indexdata)
+
+    rfcdate = str(int(time.time()))
+    write_config_file()
+
+
+# check if the rfc-index exists
+def check_rfc_index():
+    read_config_file()
+
+    if not os.path.exists(rfcindex):
+        print "No existing RFC-index, downloading it (~450Kb). Hang on a while."
+        download_rfc_index()
+    else:
+        # check if the index is older than the local stored one
+        # getdate() returns a 9-tuple
+        index_headers = urllib.urlopen(rfcurl + indexfile)
+        url_date      = int(time.mktime(index_headers.info().getdate("Last-modified")))
+        if url_date > int(rfcdate):
+            print "Remote RFC-index is newer than the last one downloaded. Downloading it, hang on."
+            download_rfc_index()
+
+
+# launches a browser (if any) or downloads the rfc and shows it
+def show_rfc(rfcnum):
+    url = rfcurl+"rfc"+str(rfcnum)+".txt"
+    res = -1
+
+    # rfcbrowsers
+    for browser in rfcbrowsers:
+        print "Trying '%s'" %(browser)
+        command = browser+" "+url
+        res = os.system(command)
+        if res == 0:
+            return
+
+    import tempfile
+    filename = os.path.join(tempfile.tempdir, tempfile.mktemp(".txt"))
+    f = open(filename, "w")
+    rfcdata = urllib.urlopen(url).read()
+    f.write(rfcdata)
+    f.close()
+    for pager in rfcpagers:
+        print "Trying '%s'" %(pager)
+        command = pager+" "+filename
+        res = os.system(command)
+        if res == 0:
+            break
+        
+    os.remove(filename)
+
+
+# search for the string in the rfc-index
+def search_rfc(str):
+    check_rfc_index()
+
+    rfcre = re.compile(r'^.*'+str+'.*$', re.I)
+    data = open(rfcindex, "r").readlines()
+
+    matches = 0
+    print "\nResult:\n"
+    for n in data:
+        match = rfcre.search(n)
+        if match:
+            print match.group(0)
+            matches += 1
+
+    print
+    if matches == 0:
+        print "No matches."
+    else:
+        print "%d matches." %(matches)
+
+
+def display_rfc_servers():
+    print "\nAvailable RFC-servers:"
+    for i in range(len(rfcurls)):
+        s = rfcurls[i]
+        if s == rfcurl:
+            s += " (current)"
+        print "%2d.\t%s" % (i+1, s)
+
+
+def print_usage():
+    print progname+""" - a simple rfc-browser.
+
+Usage:
+    %s <n>            Search RFC-index for the specified RFC-#.
+    %s <string>       Search the RFC-index for <string>
+    %s -h             Print this help
+    %s -i             Forces an update of the RFC-index
+    %s -k <string>    Search the RFC-index for <string>
+    %s -v             Output version information
+    %s -u             Lists the available RFC-servers
+    %s -w <n>         Sets the base RFC-server to the number listed with -u
+""" % ((progname,)*8)
+
+
+def error(str):
+    print_usage()
+    print "Error: %s" %(str)
+    raise SystemExit
+
+
+
+if __name__ == '__main__':
+    argc = len(sys.argv)
+    progname = "rfc.py"
+    read_config_file()
+
+    if argc == 1:
+        print_usage()
+        raise SystemExit
+
+    if argc == 2:
+        option = sys.argv[1]
+        if option == "-h":
+            print_usage()
+        elif option == "-i":
+            print "Forcing a download of the RFC-index."
+            download_rfc_index()
+        elif option == "-k":
+            error("Need a string to search for.")
+        elif option == "-u":
+            display_rfc_servers()
+        elif option == "-v":
+            print "rfc.py v"+str(__version__)+"\n\nSend bugreports to <bos@hack.org>."
+        elif option == "-w":
+            print "Need a valid server offset number."
+            display_rfc_servers()
+        elif option.isdigit():
+            show_rfc(option)
+            print "Done."
+        elif option[0]=='-':
+            error("Unknown option '%s'." %(option))
+	else:
+	    search_rfc(" ".join(sys.argv[1:argc]))
+
+        raise SystemExit
+
+    if argc == 3:
+        option = sys.argv[1]
+        flag   = sys.argv[2]
+        if option == "-w":
+            if not flag.isdigit():
+                print "Need a valid server offset number."
+                display_rfc_servers()
+                raise SystemExit
+
+            i = int(flag)-1
+            if i<0 or i>len(rfcurls)-1:
+                print "Server offset out of range."
+                display_rfc_servers()
+                raise SystemExit
+
+            if rfcurl == rfcurls[i]:
+                print "Same server, not changed."
+            else:
+                rfcurl = rfcurls[i]
+                print "Changed to %s" %(rfcurl)
+                write_config_file()
+
+        if option == "-k":
+            search_rfc(flag)
+    else:
+        option = sys.argv[1]
+        if option == "-k":
+            search_rfc(" ".join(sys.argv[2:argc]))
+	else:
+	    error("Jibberish parameters.")

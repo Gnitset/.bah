@@ -1,0 +1,7 @@
+au BufReadPost * if search('\S', 'w') == 0 | set fenc=latin9 | endif
+
+set ts=4
+
+filetype plugin on
+set grepprg=grep\ -nH\ $*
+

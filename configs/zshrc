@@ -1,0 +1,141 @@
+# ~/.zshrc
+# zsh_20081020
+
+setopt NO_PROMPT_CR
+setopt NO_BEEP
+setopt AUTO_MENU
+setopt COMPLETE_IN_WORD
+setopt EXTENDED_GLOB
+setopt AUTOCD
+setopt INTERACTIVE_COMMENTS
+setopt APPEND_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_ALL_DUPS
+setopt SHARE_HISTORY
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion::complete:*' use-cache 1
+zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
+zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+
+autoload -U compinit
+compinit -d ~/.zcompdump.`hostname`
+
+bindkey '^a' beginning-of-line
+bindkey '^e' end-of-line
+bindkey '^r' history-incremental-search-backward
+bindkey '^y' yank
+bindkey '^x' copy-prev-shell-word
+bindkey '^z' vi-undo-change
+bindkey "\e[1~" beginning-of-line	# home
+bindkey "\e[2~" quoted-insert		# insert
+bindkey "\e[3~" delete-char			# delete
+bindkey "\e[4~" end-of-line			# end
+bindkey "\e[5~" shell-backward-word	# pgup
+bindkey "\e[6~" shell-forward-word	# pgdn
+#bindkey "\e[7~" beginning-of-line
+#bindkey "\e[8~" end-of-line
+#bindkey "\e[H" beginning-of-line
+#bindkey "\e[F" end-of-line
+#bindkey "\eOH" beginning-of-line
+#bindkey "\eOF" end-of-line
+#bindkey "\eOd" backward-word
+#bindkey "\eOc" forward-word
+
+alias py=python2.5
+alias find='noglob find'
+alias doi='ssh doija -t screen -Dr'
+alias soi='ssh soija -t screen -Dr'
+
+update-zsh() {
+	emulate -L zsh
+	echo updating zsh-config
+	get http://doija.oijk.net/zsh/zsh_latest/zshrc >~/.zshrc_ && mv ~/.zshrc_ ~/.zshrc && echo zshrc updated.
+	get http://doija.oijk.net/zsh/zsh_latest/zprofile >~/.zprofile_ && mv ~/.zprofile_ ~/.zprofile && echo zprofile updated.
+	if [[ -f ~/.zshrc.user ]] ; then
+		get http://doija.oijk.net/zsh/zsh_latest/users/$USER >~/.zshrc.user_ && mv ~/.zshrc.user_ ~/.zshrc.user && echo zshrc.user updated.
+	fi
+	rm ~/.zcompdump.*
+}
+
+update-conf() {
+	emulate -L zsh
+	echo updating ${1}-config
+	if [[ ${1} == "ssh" ]] ;then
+		mkdir -p ~/.ssh
+		get http://doija.oijk.net/conf/conf_latest/ssh/config >~/.ssh/config_ && mv ~/.ssh/config_ ~/.ssh/config && echo ssh/config updated.
+		get http://doija.oijk.net/conf/conf_latest/ssh/authorized_keys >~/.ssh/authorized_keys_ && mv ~/.ssh/authorized_keys_ ~/.ssh/authorized_keys && echo ssh/authorized_keys updated.
+	elif [[ ${1} == "screen" ]] ;then
+		get http://doija.oijk.net/conf/conf_latest/screen/screenrc >~/.screenrc_ && mv ~/.screenrc_ ~/.screenrc && echo screenrc updated.
+	fi
+}
+
+get() {
+	emulate -L zsh
+	if which curl >/dev/null; then
+		curl "$1"
+	elif which wget >/dev/null; then
+		wget -O - "$1"
+	else
+		return 2
+	fi
+}
+
+precmd() {
+	if [ "$TERM" != "linux" ]; then
+		echo -ne "\033]0;${USER}@${HOST}: ${PWD}\007"
+	fi
+}
+
+shell-backward-word() {
+	emulate -L zsh
+	local words word spaces
+	words=(${(z)LBUFFER})
+	word=$words[-1]
+	spaces=-1
+	while [[ $LBUFFER[$spaces] == " " ]]; do
+			(( spaces-- ))
+	done
+	(( CURSOR -= $#word - $spaces - 1 ))
+}
+shell-forward-word() {
+	emulate -L zsh
+	local words word spaces
+	words=(${(z)RBUFFER})
+	word=$words[1]
+	spaces=1
+	while [[ $RBUFFER[$spaces] == " " ]]; do
+		(( spaces++ ))
+	done
+	(( CURSOR += $#word + $spaces - 1 ))
+}
+shell-backward-kill-word() {
+	emulate -L zsh
+	local words word spaces
+	words=(${(z)LBUFFER})
+	word=$words[-1]
+	if [[ -n ${word[2,-2]//[^\/]} ]]; then
+		word=${word##*/?}o
+	fi
+	spaces=-1
+	while [[ $LBUFFER[$spaces] == " " ]]; do
+			(( spaces-- ))
+	done
+	#killring=("$CUTBUFFER" "${(@)killring[1,-2]}")
+	#CUTBUFFER=$LBUFFER[$((-$#word + $spaces + 1)),-1]
+	LBUFFER=$LBUFFER[0,$((-$#word + $spaces))]
+}
+zle -N shell-backward-word
+zle -N shell-forward-word
+zle -N shell-backward-kill-word
+bindkey '^w' shell-backward-kill-word
+
+if [[ -f ~/.zshrc.user ]]; then
+  . ~/.zshrc.user
+fi
+if [[ -f ~/.zshrc.local ]]; then
+  . ~/.zshrc.local
+fi
+if [ "$HAVE_RUN_ZPROFILE" != "Y" ]; then
+  . ~/.zprofile
+fi

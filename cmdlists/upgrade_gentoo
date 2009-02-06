@@ -1,0 +1,11 @@
+emerge --sync
+emerge -avuND world
+ etc-update
+emerge --depclean -a
+revdep-rebuild -- -av
+emerge -avuND world
+ emerge --depclean -a
+ revdep-rebuild -- -av
+  emerge -avuND world
+rm /usr/portage/distfiles/*
+ etc-update

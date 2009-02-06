@@ -1,0 +1,6 @@
+mplayer -dvd-device /dev/sr0 dvd://1 -vf cropdetect=24:2
+mencoder -dvd-device /dev/sr0 dvd://1 -oac copy -ovc lavc -lavcopts vcodec=mpeg4:autoaspect:vqscale=2:mbd=1:qpel:threads=2 -o video.avi -slang en -vobsubout en_sub
+mencoder -dvd-device /dev/sr0 dvd://1 -oac copy -ovc copy -o /dev/null -slang sv -vobsubout sv_sub
+mplayer -dvd-device /dev/sr0 dvd://1 -dumpaudio -aid 130
+mkvmerge --default-language eng -o t.mkv --aspect-ratio 0:16/9 video.avi --language 0:und stream.dump --language 0:eng en_sub.idx --language 0:swe sv_sub.idx
+mencoder -dvd-device /dev/sr0 dvd://1 -oac copy -ovc lavc -lavcopts vcodec=mpeg4:autoaspect:vqscale=2:mbd=1:qpel:threads=2 -o video.avi -slang en -vobsubout en_sub -vf crop=718:448:2:64 && mencoder -dvd-device /dev/sr0 dvd://1 -oac copy -ovc copy -o /dev/null -slang sv -vobsubout sv_sub && mplayer -dvd-device /dev/sr0 dvd://1 -dumpaudio -aid 129 && mkvmerge --default-language eng -o 'Sound of music.mkv' --aspect-ratio 0:2.28/1 video.avi --language 0:und stream.dump --language 0:eng en_sub.idx --language 0:swe sv_sub.idx
