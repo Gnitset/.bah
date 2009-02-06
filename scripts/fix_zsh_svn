@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd /usr/share/zsh/4.3.4/functions/
+sudo wget http://gvn.googlecode.com/svn/trunk/contrib/zsh/_subversion
