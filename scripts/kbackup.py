@@ -45,7 +45,18 @@ class KBackup():
 		except: pass
 
 	def rotate(self):
-		print os.readlink(os.path.join(self.root, self.host, "current"))
+		days=0
+		#days=30
+		now=time.time()
+		bort=[]
+
+		for dir in os.listdir():
+			s=os.stat(dir)
+			if s[-1] < (now-(days*24*60*60)):
+				bort.append(dir)
+		
+		print '\n'.join(bort)
+
 		return False
 
 	def sync(self):
