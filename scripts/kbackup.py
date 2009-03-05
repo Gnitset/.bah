@@ -55,7 +55,7 @@ class KBackup():
 				s=os.stat(dir)
 				if s[-1] < (now-(days*24*60*60)):
 					bort.append(dir)
-			except: pass
+			except: print "fooo", dir
 		
 		print '\n'.join(bort)
 
