@@ -57,7 +57,7 @@ class KBackup():
 			except: continue
 			try:
 				if s[-1] < (now-(self.keep*24*60*60)) and dir != "current" \
-				   and os.path.join(self.root, self.host, dir) != os.readlink(os.path.join(self.root, self.host, "current"):
+				   and os.path.join(self.root, self.host, dir) != os.readlink(os.path.join(self.root, self.host, "current")):
 					bort.append(os.path.join(self.root, self.host, dir))
 			except: pass
 		
