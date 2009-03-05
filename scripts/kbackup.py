@@ -34,7 +34,7 @@ class KBackup():
 		self.root=root
 		self.host=host
 		try:
-			assert conf["keep"]
+#			assert conf["keep"]
 			self.keep=conf["keep"]
 		except: pass
 		try:
@@ -53,19 +53,23 @@ class KBackup():
 
 		for dir in os.listdir(os.path.join(self.root, self.host)):
 			if dir == "current" or os.path.join(self.root, self.host, dir) == os.readlink(os.path.join(self.root, self.host, "current")):
+				print "x",os.path.join(self.root, self.host, dir)
 				continue
 
 			try:
 				s=os.stat(os.path.join(self.root, self.host, dir))
 				if s[-1] < (now-(self.keep*24*60*60)):
+					print "b",os.path.join(self.root, self.host, dir)
 					bort.append(os.path.join(self.root, self.host, dir))
+				else:
+					print "k",os.path.join(self.root, self.host, dir)
 			except: pass
 		
-		for dir in bort:
-			if os.spawnvp(os.P_WAIT, "rm" ["rm", "-r"]+bort):
-				print "error deleting,", bort
+#		if len(bort) > 0:
+#			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
+#				print "error deleting,", bort
 
-		return False
+		return True
 
 	def sync(self):
 		new=os.path.join(self.root, self.host, "new")
