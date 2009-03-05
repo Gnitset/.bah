@@ -52,7 +52,7 @@ class KBackup():
 		bort=[]
 
 		for dir in os.listdir(os.path.join(self.root, self.host)):
-			if dir == "current" or os.path.join(self.root, self.host, dir) == os.readlink(os.path.join(self.root, self.host, "current")):
+			if dir == "current" or dir == os.readlink(os.path.join(self.root, self.host, "current")):
 				print "x",os.path.join(self.root, self.host, dir)
 				continue
 
