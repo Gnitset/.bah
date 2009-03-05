@@ -72,8 +72,8 @@ class KBackup():
 			sys.exit(2)
 
 		stime=time.time()
-		os.utime(new), (stime, stime))
-		os.rename(new), os.path.join(self.root, self.host, time.asctime(time.localtime(stime))))
+		os.utime(new, (stime, stime))
+		os.rename(new, os.path.join(self.root, self.host, time.asctime(time.localtime(stime))))
 		try:
 			os.remove(current)
 		except: pass
