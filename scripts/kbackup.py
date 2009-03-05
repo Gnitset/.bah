@@ -34,7 +34,7 @@ class KBackup():
 		self.root=root
 		self.host=host
 		try:
-#			assert conf["keep"]
+			assert conf["keep"]
 			self.keep=conf["keep"]
 		except: pass
 		try:
@@ -65,9 +65,9 @@ class KBackup():
 					print "k",os.path.join(self.root, self.host, dir)
 			except: pass
 		
-#		if len(bort) > 0:
-#			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
-#				print "error deleting,", bort
+		if len(bort) > 0:
+			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
+				print "error deleting,", bort
 
 		return True
 
