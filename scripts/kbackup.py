@@ -53,15 +53,17 @@ class KBackup():
 
 		for dir in os.listdir(os.path.join(self.root, self.host)):
 			if dir == "current" or os.path.join(self.root, self.host, dir) == os.readlink(os.path.join(self.root, self.host, "current")):
-				print "cont", dir
 				continue
+
 			try:
 				s=os.stat(os.path.join(self.root, self.host, dir))
 				if s[-1] < (now-(self.keep*24*60*60)):
 					bort.append(os.path.join(self.root, self.host, dir))
 			except: pass
 		
-		print '\n'.join(bort)
+		for dir in bort:
+			if os.spawnvp(os.P_WAIT, "rm" ["rm", "-r"]+bort):
+				print "error deleting,", bort
 
 		return False
 
