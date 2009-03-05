@@ -52,12 +52,12 @@ class KBackup():
 		bort=[]
 
 		for dir in os.listdir(os.path.join(self.root, self.host)):
+			if dir == "current" or os.path.join(self.root, self.host, dir) == os.readlink(os.path.join(self.root, self.host, "current")):
+				print "cont", dir
+				continue
 			try:
 				s=os.stat(os.path.join(self.root, self.host, dir))
-			except: continue
-			try:
-				if s[-1] < (now-(self.keep*24*60*60)) and dir != "current" \
-				   and os.path.join(self.root, self.host, dir) != os.readlink(os.path.join(self.root, self.host, "current")):
+				if s[-1] < (now-(self.keep*24*60*60)):
 					bort.append(os.path.join(self.root, self.host, dir))
 			except: pass
 		
