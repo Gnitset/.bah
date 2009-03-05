@@ -10,6 +10,7 @@ sources["doija.int.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "
 sources["mail.oijk.net"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
 
 def main():
+	print time.asctime(time.localtime())
 	try:
 		os.stat(os.path.join(root,lockfile))
 		print "lockfile exists"
@@ -21,6 +22,7 @@ def main():
 		kb.rotate()
 		kb.sync()
 		print host, "completed"
+	print time.asctime(time.localtime())
 
 class KBackup():
 	root=""
