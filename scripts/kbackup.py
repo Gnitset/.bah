@@ -33,7 +33,10 @@ class KBackup():
 	def __init__(self, root, host, conf):
 		self.root=root
 		self.host=host
-		self.keep=conf["keep"]
+		try:
+			assert conf["keep"]
+			self.keep=conf["keep"]
+		except: pass
 		try:
 			self.user=conf["user"]
 		except: pass
@@ -45,16 +48,17 @@ class KBackup():
 		except: pass
 
 	def rotate(self):
-		days=0
-		#days=30
 		now=time.time()
 		bort=[]
 
 		for dir in os.listdir(os.path.join(self.root, self.host)):
 			try:
 				s=os.stat(os.path.join(self.root, self.host, dir))
-				if s[-1] < (now-(days*24*60*60)):
-					bort.append(dir)
+			except: continue
+			try:
+				if s[-1] < (now-(self.keep*24*60*60)) and dir != "current" \
+				   and os.path.join(self.root, self.host, dir) != os.readlink(os.path.join(self.root, self.host, "current"):
+					bort.append(os.path.join(self.root, self.host, dir))
 			except: pass
 		
 		print '\n'.join(bort)
