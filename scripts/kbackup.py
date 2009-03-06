@@ -127,7 +127,7 @@ class KBackup():
 		try:
 			os.remove(current)
 		except: pass
-		os.symlink(os.path.join(self.root, self.host, dirbase, dir), current)
+		os.symlink(os.path.join(dirbase, dir), current)
 
 
 if __name__ == "__main__":
