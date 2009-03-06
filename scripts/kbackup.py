@@ -118,7 +118,7 @@ class KBackup():
 		dir=':'.join([str(de).zfill(2) for de in time.localtime(stime)[3:6]])
 
 		try:
-			os.makedirs(os.path.join(self.root, dirbase))
+			os.makedirs(os.path.join(self.root, self.host, dirbase))
 		except OSError, oe:
 			if oe.errno != 17:
 				raise
