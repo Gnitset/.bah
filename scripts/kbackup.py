@@ -76,18 +76,21 @@ class KBackup():
 				ldir_day=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month))
 				ldir_day.sort()
 				for dir_day in ldir_day:
-					if os.path.join([self.root, self.host, dir_year, dir_month, dir_day]) == os.readlink(os.path.join(self.root, self.host, "current")):
-						print "x",os.path.join([dir_year, dir_month, dir_day])
-						continue
+					ldir=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month, ldir_day))
+					ldir.sort()
+					for dir in ldir:
+						if os.path.join([self.root, self.host, dir_year, dir_month, dir_day, dir]) == os.readlink(os.path.join(self.root, self.host, "current")):
+							print "x",os.path.join([dir_year, dir_month, dir_day, dir])
+							continue
 
-					try:
-						s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day))
-						if s[-1] < (self.now-(self.keep*24*60*60)):
-							print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day)
-							bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day))
-						else:
-							print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day)
-					except: pass
+						try:
+							s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
+							if s[-1] < (self.now-(self.keep*24*60*60)):
+								print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
+								bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
+							else:
+								print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
+						except: pass
 		
 #		if len(bort) > 0:
 #			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
