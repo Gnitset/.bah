@@ -106,7 +106,10 @@ class KBackup():
 		current=os.path.join(self.root, self.host, "current")
 
 		print "running rsync on host", self.host, "with sourcename", self.sourcename
-		ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::"+self.sourcename+"/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+		try:
+			ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::"+self.sourcename+"/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+		except KeyboardInterrupt:
+			ret_val=1
 
 		if ret_val < 0:
 			print "cleanup"
