@@ -69,7 +69,7 @@ class KBackup():
 		ldir_year.sort()
 
 		for dir_year in ldir_year:
-			if dir_year=="current": continue
+			if dir_year=="current" or dir_year=="new": continue
 			ldir_month=os.listdir(os.path.join(self.root, self.host, dir_year))
 			ldir_month.sort()
 			for dir_month in ldir_month:
