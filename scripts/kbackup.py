@@ -87,7 +87,7 @@ class KBackup():
 
 						try:
 							s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
-							if s[-1] < (self.now-(self.keep*24*60*60)):
+							if s[-2] < (self.now-(self.keep*24*60*60)):
 								print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 								bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
 							else:
