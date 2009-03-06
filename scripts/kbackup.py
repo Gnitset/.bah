@@ -76,7 +76,7 @@ class KBackup():
 				ldir_day=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month))
 				ldir_day.sort()
 				for dir_day in ldir_day:
-					ldir=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month, ldir_day))
+					ldir=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month, dir_day))
 					ldir.sort()
 					for dir in ldir:
 						if os.path.join([self.root, self.host, dir_year, dir_month, dir_day, dir]) == os.readlink(os.path.join(self.root, self.host, "current")):
