@@ -72,7 +72,7 @@ class KBackup():
 			ldir_month=os.listdir(os.path.join(self.root, self.host, dir_year))
 			ldir_month.sort()
 			for dir_month in ldir_month:
-				ldir_day=os.listdir(os.path.join(self.root, self.host, dir_month))
+				ldir_day=os.listdir(os.path.join(self.root, self.host, dir_year, dir_month))
 				ldir_day.sort()
 				for dir_day in ldir_day:
 					if os.path.join([self.root, self.host, dir_year, dir_month, dir_day]) == os.readlink(os.path.join(self.root, self.host, "current")):
@@ -108,8 +108,8 @@ class KBackup():
 			sys.exit(2)
 
 		stime=time.time()
-		dirbase='/'.join([str(de) for de in time.localtime(stime)[0:3]])
-		dir=':'.join([str(de) for de in time.localtime(stime)[3:6]])
+		dirbase='/'.join([str(de).zfill(2) for de in time.localtime(stime)[0:3]])
+		dir=':'.join([str(de).zfill(2) for de in time.localtime(stime)[3:6]])
 
 		try:
 			os.makedirs(os.path.join(self.root, dirbase))
