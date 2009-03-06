@@ -80,7 +80,7 @@ class KBackup():
 					ldir.sort()
 					for dir in ldir:
 						try:
-							if os.path.join([self.root, self.host, dir_year, dir_month, dir_day, dir]) == os.readlink(os.path.join(self.root, self.host, "current")):
+							if os.path.join([dir_year, dir_month, dir_day, dir]) == os.readlink(os.path.join(self.root, self.host, "current")):
 								print "x",os.path.join([dir_year, dir_month, dir_day, dir])
 								continue
 						except: continue
@@ -94,10 +94,9 @@ class KBackup():
 								print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 						except: pass
 		
-#		if len(bort) > 0:
-#			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
-#				print "error deleting,", bort
-		print bort
+		if len(bort) > 0:
+			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
+				print "error deleting,", bort
 
 		return True
 
