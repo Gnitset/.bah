@@ -18,12 +18,16 @@ def main():
 		sys.exit(1)
 	except: pass
 
+	open(os.path.join(root,lockfile)).write(os.getpid())
+
 	for host in sources:
 		kb=KBackup(root, host, sources[host])
 		kb.rotate()
 		kb.sync()
 		print host, "completed"
 	print time.asctime(time.localtime())
+
+	os.remove(os.path.join(root,lockfile))
 
 class KBackup():
 	root=""
