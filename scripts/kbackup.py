@@ -10,6 +10,7 @@ debug=True
 sources["doija.int.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
 sources["web.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
 sources["mail.oijk.net"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
+sources["svn.ladan.se"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
 
 def main():
 	print time.asctime(time.localtime())
