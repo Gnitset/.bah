@@ -53,6 +53,12 @@ class KBackup():
 		try:
 			self.sourcename=conf["sourcename"]
 		except: pass
+		try:
+			os.mkdir(os.path.join(self.root, self.host))
+		except OSError, oe:
+			if oe.errno != 17:
+				raise
+
 
 	def rotate(self):
 		now=time.time()
