@@ -35,7 +35,6 @@ class KBackup():
 	root=""
 	host=""
 	keep="7"
-	sourcename="backup"
 	user="backup"
 	password=""
 	now=0
@@ -55,9 +54,6 @@ class KBackup():
 		except: pass
 		try:
 			self.password=conf["password"]
-		except: pass
-		try:
-			self.sourcename=conf["sourcename"]
 		except: pass
 		try:
 			os.mkdir(os.path.join(self.root, self.host))
@@ -112,9 +108,9 @@ class KBackup():
 		current=os.path.join(self.root, self.host, "current")
 
 		if self.debug:
-			print "running rsync on host", self.host, "with sourcename", self.sourcename
+			print "running rsync on host", self.host
 		try:
-			ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::"+self.sourcename+"/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+			ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
 		except:
 			ret_val=1
 
