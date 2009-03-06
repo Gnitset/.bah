@@ -36,8 +36,10 @@ class KBackup():
 	sourcename="backup"
 	user="backup"
 	password=""
+	now=0
 
 	def __init__(self, root, host, conf):
+		self.now=time.time()
 		self.root=root
 		self.host=host
 		try:
@@ -61,29 +63,35 @@ class KBackup():
 
 
 	def rotate(self):
-		now=time.time()
 		bort=[]
 
-		ldir=os.listdir(os.path.join(self.root, self.host))
-		ldir.sort()
+		ldir_year=os.listdir(os.path.join(self.root, self.host))
+		ldir_year.sort()
 
-		for dir in ldir:
-			if dir == "current" or dir == os.readlink(os.path.join(self.root, self.host, "current")):
-				print "x",os.path.join(self.root, self.host, dir)
-				continue
+		for dir_year in ldir_year:
+			ldir_month=os.listdir(os.path.join(self.root, self.host, dir_year))
+			ldir_month.sort()
+			for dir_month in ldir_month:
+				ldir_day=os.listdir(os.path.join(self.root, self.host, dir_month))
+				ldir_day.sort()
+				for dir_day in ldir_day:
+					if os.path.join([self.root, self.host, dir_year, dir_month, dir_day]) == os.readlink(os.path.join(self.root, self.host, "current")):
+						print "x",os.path.join([dir_year, dir_month, dir_day])
+						continue
 
-			try:
-				s=os.stat(os.path.join(self.root, self.host, dir))
-				if s[-1] < (now-(self.keep*24*60*60)):
-					print "b",os.path.join(self.root, self.host, dir)
-					bort.append(os.path.join(self.root, self.host, dir))
-				else:
-					print "k",os.path.join(self.root, self.host, dir)
-			except: pass
+					try:
+						s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day))
+						if s[-1] < (self.now-(self.keep*24*60*60)):
+							print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day)
+							bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day))
+						else:
+							print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day)
+					except: pass
 		
-		if len(bort) > 0:
-			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
-				print "error deleting,", bort
+#		if len(bort) > 0:
+#			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
+#				print "error deleting,", bort
+		print bort
 
 		return True
 
@@ -100,8 +108,18 @@ class KBackup():
 			sys.exit(2)
 
 		stime=time.time()
+		dirbase='/'.join([str(de) for de in time.localtime(stime)[0:3]])
+		dir=':'.join([str(de) for de in time.localtime(stime)[3:6]])
+
+		try:
+			os.makedirs(os.path.join(self.root, dirbase))
+		except OSError, oe:
+			if oe.errno != 17:
+				raise
+
 		os.utime(new, (stime, stime))
-		os.rename(new, os.path.join(self.root, self.host, time.asctime(time.localtime(stime))))
+		os.rename(new, os.path.join(self.root, self.host, dirbase, dir))
+
 		try:
 			os.remove(current)
 		except: pass
