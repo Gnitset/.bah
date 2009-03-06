@@ -80,6 +80,7 @@ class KBackup():
 					ldir.sort()
 					for dir in ldir:
 						try:
+							print os.path.join([dir_year, dir_month, dir_day, dir]), os.readlink(os.path.join(self.root, self.host, "current"))
 							if os.path.join([dir_year, dir_month, dir_day, dir]) == os.readlink(os.path.join(self.root, self.host, "current")):
 								print "x",os.path.join([dir_year, dir_month, dir_day, dir])
 								continue
