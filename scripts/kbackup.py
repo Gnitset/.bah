@@ -18,7 +18,7 @@ def main():
 		sys.exit(1)
 	except: pass
 
-	open(os.path.join(root,lockfile)).write(os.getpid())
+	open(os.path.join(root, lockfile), "w").write(str(os.getpid()))
 
 	for host in sources:
 		kb=KBackup(root, host, sources[host])
@@ -58,7 +58,10 @@ class KBackup():
 		now=time.time()
 		bort=[]
 
-		for dir in os.listdir(os.path.join(self.root, self.host)):
+		ldir=os.listdir(os.path.join(self.root, self.host))
+		ldir.sort()
+
+		for dir in ldir:
 			if dir == "current" or dir == os.readlink(os.path.join(self.root, self.host, "current")):
 				print "x",os.path.join(self.root, self.host, dir)
 				continue
