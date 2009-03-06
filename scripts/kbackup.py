@@ -5,6 +5,7 @@ import os, sys, time
 root="/a/backup/kbackup"
 lockfile=".kbackup.lock"
 sources={}
+debug=True
 
 sources["doija.int.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
 sources["web.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
@@ -21,10 +22,11 @@ def main():
 	open(os.path.join(root, lockfile), "w").write(str(os.getpid()))
 
 	for host in sources:
-		kb=KBackup(root, host, sources[host])
+		kb=KBackup(root, host, sources[host], debug)
 		kb.rotate()
 		kb.sync()
-		print host, "completed"
+		if debug:
+			print host, "completed"
 	print time.asctime(time.localtime())
 
 	os.remove(os.path.join(root,lockfile))
@@ -37,11 +39,13 @@ class KBackup():
 	user="backup"
 	password=""
 	now=0
+	debug=False
 
-	def __init__(self, root, host, conf):
+	def __init__(self, root, host, conf, debug=False):
 		self.now=time.time()
 		self.root=root
 		self.host=host
+		self.debug=debug
 		try:
 			assert conf["keep"]
 			self.keep=conf["keep"]
@@ -81,17 +85,20 @@ class KBackup():
 					for dir in ldir:
 						try:
 							if os.path.join(dir_year, dir_month, dir_day, dir) == os.readlink(os.path.join(self.root, self.host, "current")):
-								print "x",os.path.join(dir_year, dir_month, dir_day, dir)
+								if self.debug:
+									print "x",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 								continue
 						except: continue
 
 						try:
 							s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
 							if s[-2] < (self.now-(self.keep*24*60*60)):
-								print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
+								if self.debug:
+									print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 								bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
 							else:
-								print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
+								if self.debug:
+									print "k",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 						except: pass
 		
 		if len(bort) > 0:
@@ -104,7 +111,8 @@ class KBackup():
 		new=os.path.join(self.root, self.host, "new")
 		current=os.path.join(self.root, self.host, "current")
 
-		print "running rsync on host", self.host, "with sourcename", self.sourcename
+		if self.debug:
+			print "running rsync on host", self.host, "with sourcename", self.sourcename
 		try:
 			ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::"+self.sourcename+"/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
 		except:
