@@ -22,15 +22,17 @@ def main():
 
 	open(os.path.join(root, lockfile), "w").write(str(os.getpid()))
 
-	for host in sources:
-		kb=KBackup(root, host, sources[host], debug)
-		kb.rotate()
-		kb.sync()
-		if debug:
-			print host, "completed"
-	print time.asctime(time.localtime())
+	try:
+		for host in sources:
+			kb=KBackup(root, host, sources[host], debug)
+			kb.rotate()
+			kb.sync()
+			if debug:
+				print host, "completed"
+		print time.asctime(time.localtime())
 
-	os.remove(os.path.join(root,lockfile))
+	finally:
+		os.remove(os.path.join(root,lockfile))
 
 class KBackup():
 	root=""
@@ -47,7 +49,7 @@ class KBackup():
 		self.host=host
 		self.debug=debug
 		try:
-			assert conf["keep"]
+			assert conf["keep"] > 0
 			self.keep=conf["keep"]
 		except: pass
 		try:
@@ -85,11 +87,12 @@ class KBackup():
 								if self.debug:
 									print "x",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 								continue
+						# bug
 						except: continue
 
 						try:
 							s=os.stat(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
-							if s[-2] < (self.now-(self.keep*24*60*60)):
+							if s.st_mtime < (self.now-(self.keep*24*60*60)):
 								if self.debug:
 									print "b",os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir)
 								bort.append(os.path.join(self.root, self.host, dir_year, dir_month, dir_day, dir))
@@ -141,3 +144,14 @@ class KBackup():
 
 if __name__ == "__main__":
 	main()
+
+##for dirpath, dirnames, filenames in os.walk(rootdir):
+##	try:
+##		dirnames.remove('new')
+##	except:	pass
+##	dirnames.sort()
+##	level=dirpath.count('/')-rootdir.count('/')
+##	if level==3:
+##		for dir in dirnames:
+##			# do something to os.join(dirpath,dir) here
+##		dirnames[:]=[]	# stop the walk
