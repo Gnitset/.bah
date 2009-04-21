@@ -1,0 +1,541 @@
+http://code.dogmap.org./qmail/#realrcptto
+
+Changes in version 2006.12.10:
+- For QMAILRRTENYALL, use error code 554 after DATA, not 550.  Thanks to
+  ... sorry, I lost track of who found this.
+- Log stat() errors for .qmail files.  Thanks to Chris Bensend for suggesting
+  this.
+
+Changes in version 2006.10.26:
+- Logging uses substdio_puts() and substdio_flush() instead of
+  substdio_putsflush().  This makes log entries less likely to be
+  interleaved.  Thanks to Matthew Dempsky for finding this.
+
+Changes in version 2004.09.14:
+- Strict syntax fix: a variable declaration was accidentally put among
+  statements instead of at the beginning of the block.
+
+Changes in version 2004.08.30:
+- Added QMAILRRTDENYALL.
+- Cleanup: missing "break" for some switch statements (no visible behavior
+  changes AFAICT).  Thanks to Markus Stumpf for finding these.
+
+Changes in version 2004.02.05:
+- Short-circuit speedup when "dash" is empty.
+- Move duplicated code into realrcptto.c.
+- Add logging of rejected addresses.
+- Verified inter-patchability with netqmail-1.05 and Russell Nelson's
+  qmail-smtpd-viruscan patch.
+
+diff -Naur qmail-1.03-orig/Makefile qmail-1.03/Makefile
+--- qmail-1.03-orig/Makefile	1998-06-15 06:52:55.000000000 -0400
++++ qmail-1.03/Makefile	2006-12-08 03:21:25.000000000 -0500
+@@ -1367,14 +1367,15 @@
+ 	./compile qmail-qmqpd.c
+ 
+ qmail-qmtpd: \
+-load qmail-qmtpd.o rcpthosts.o control.o constmap.o received.o \
++load qmail-qmtpd.o realrcptto.o rcpthosts.o control.o constmap.o received.o \
+ date822fmt.o now.o qmail.o cdb.a fd.a wait.a datetime.a open.a \
+ getln.a sig.a case.a env.a stralloc.a alloc.a substdio.a error.a \
+-str.a fs.a auto_qmail.o
+-	./load qmail-qmtpd rcpthosts.o control.o constmap.o \
++str.a fs.a auto_qmail.o auto_break.o auto_usera.o
++	./load qmail-qmtpd realrcptto.o rcpthosts.o control.o constmap.o \
+ 	received.o date822fmt.o now.o qmail.o cdb.a fd.a wait.a \
+ 	datetime.a open.a getln.a sig.a case.a env.a stralloc.a \
+-	alloc.a substdio.a error.a str.a fs.a auto_qmail.o 
++	alloc.a substdio.a error.a str.a fs.a auto_qmail.o auto_break.o \
++	auto_usera.o
+ 
+ qmail-qmtpd.0: \
+ qmail-qmtpd.8
+@@ -1532,17 +1533,17 @@
+ 	./compile qmail-showctl.c
+ 
+ qmail-smtpd: \
+-load qmail-smtpd.o rcpthosts.o commands.o timeoutread.o \
++load qmail-smtpd.o realrcptto.o rcpthosts.o commands.o timeoutread.o \
+ timeoutwrite.o ip.o ipme.o ipalloc.o control.o constmap.o received.o \
+ date822fmt.o now.o qmail.o cdb.a fd.a wait.a datetime.a getln.a \
+ open.a sig.a case.a env.a stralloc.a alloc.a substdio.a error.a str.a \
+-fs.a auto_qmail.o socket.lib
+-	./load qmail-smtpd rcpthosts.o commands.o timeoutread.o \
++fs.a auto_qmail.o auto_break.o auto_usera.o socket.lib
++	./load qmail-smtpd realrcptto.o rcpthosts.o commands.o timeoutread.o \
+ 	timeoutwrite.o ip.o ipme.o ipalloc.o control.o constmap.o \
+ 	received.o date822fmt.o now.o qmail.o cdb.a fd.a wait.a \
+ 	datetime.a getln.a open.a sig.a case.a env.a stralloc.a \
+-	alloc.a substdio.a error.a str.a fs.a auto_qmail.o  `cat \
+-	socket.lib`
++	alloc.a substdio.a error.a str.a fs.a auto_qmail.o auto_break.o \
++	auto_usera.o `cat socket.lib`
+ 
+ qmail-smtpd.0: \
+ qmail-smtpd.8
+@@ -1686,6 +1687,11 @@
+ auto_split.h
+ 	./compile readsubdir.c
+ 
++realrcptto.o: \
++compile realrcptto.c auto_break.h auto_usera.h byte.h case.h cdb.h \
++constmap.h error.h fmt.h open.h str.h stralloc.h uint32.h
++	./compile realrcptto.c
++
+ received.o: \
+ compile received.c fmt.h qmail.h substdio.h now.h datetime.h \
+ datetime.h date822fmt.h received.h
+diff -Naur qmail-1.03-orig/qmail-qmtpd.c qmail-1.03/qmail-qmtpd.c
+--- qmail-1.03-orig/qmail-qmtpd.c	1998-06-15 06:52:55.000000000 -0400
++++ qmail-1.03/qmail-qmtpd.c	2006-12-08 03:21:25.000000000 -0500
+@@ -14,6 +14,15 @@
+ 
+ void badproto() { _exit(100); }
+ void resources() { _exit(111); }
++void die_nomem() { resources(); }
++void die_control() { resources(); }
++void die_cdb() { resources(); }
++void die_sys() { resources(); }
++
++extern void realrcptto_init();
++extern void realrcptto_start();
++extern int realrcptto();
++extern int realrcptto_deny();
+ 
+ int safewrite(fd,buf,len) int fd; char *buf; int len;
+ {
+@@ -98,6 +107,8 @@
+   if (rcpthosts_init() == -1) resources();
+   relayclient = env_get("RELAYCLIENT");
+   relayclientlen = relayclient ? str_len(relayclient) : 0;
++
++  realrcptto_init();
+  
+   if (control_readint(&databytes,"control/databytes") == -1) resources();
+   x = env_get("DATABYTES");
+@@ -114,6 +125,7 @@
+   if (!local) local = "unknown";
+  
+   for (;;) {
++    realrcptto_start();
+     if (!stralloc_copys(&failure,"")) resources();
+     flagsenderok = 1;
+  
+@@ -216,6 +228,10 @@
+             case -1: resources();
+             case 0: failure.s[failure.len - 1] = 'D';
+           }
++
++        if (!failure.s[failure.len - 1])
++          if (!realrcptto(buf))
++            failure.s[failure.len - 1] = 'D';
+  
+         if (!failure.s[failure.len - 1]) {
+           qmail_to(&qq,buf);
+@@ -231,6 +247,7 @@
+     result = qmail_close(&qq);
+     if (!flagsenderok) result = "Dunacceptable sender (#5.1.7)";
+     if (databytes) if (!bytestooverflow) result = "Dsorry, that message size exceeds my databytes limit (#5.3.4)";
++    if (realrcptto_deny()) result = "Dsorry, no mailbox here by that name. (#5.1.1)\r\n";
+  
+     if (*result)
+       len = str_len(result);
+diff -Naur qmail-1.03-orig/qmail-smtpd.c qmail-1.03/qmail-smtpd.c
+--- qmail-1.03-orig/qmail-smtpd.c	1998-06-15 06:52:55.000000000 -0400
++++ qmail-1.03/qmail-smtpd.c	2006-12-09 04:02:00.000000000 -0500
+@@ -47,6 +47,8 @@
+ void die_nomem() { out("421 out of memory (#4.3.0)\r\n"); flush(); _exit(1); }
+ void die_control() { out("421 unable to read controls (#4.3.0)\r\n"); flush(); _exit(1); }
+ void die_ipme() { out("421 unable to figure out my IP addresses (#4.3.0)\r\n"); flush(); _exit(1); }
++void die_cdb() { out("421 unable to read cdb user database (#4.3.0)\r\n"); flush(); _exit(1); }
++void die_sys() { out("421 unable to read system user database (#4.3.0)\r\n"); flush(); _exit(1); }
+ void straynewline() { out("451 See http://pobox.com/~djb/docs/smtplf.html.\r\n"); flush(); _exit(1); }
+ 
+ void err_bmf() { out("553 sorry, your envelope sender is in my badmailfrom list (#5.7.1)\r\n"); }
+@@ -59,6 +61,10 @@
+ void err_vrfy() { out("252 send some mail, i'll try my best\r\n"); }
+ void err_qqt() { out("451 qqt failure (#4.3.0)\r\n"); }
+ 
++extern void realrcptto_init();
++extern void realrcptto_start();
++extern int realrcptto();
++extern int realrcptto_deny();
+ 
+ stralloc greeting = {0};
+ 
+@@ -116,6 +122,8 @@
+   if (bmfok == -1) die_control();
+   if (bmfok)
+     if (!constmap_init(&mapbmf,bmf.s,bmf.len,0)) die_nomem();
++
++  realrcptto_init();
+  
+   if (control_readint(&databytes,"control/databytes") == -1) die_control();
+   x = env_get("DATABYTES");
+@@ -245,6 +253,7 @@
+   if (!stralloc_copys(&rcptto,"")) die_nomem();
+   if (!stralloc_copys(&mailfrom,addr.s)) die_nomem();
+   if (!stralloc_0(&mailfrom)) die_nomem();
++  realrcptto_start();
+   out("250 ok\r\n");
+ }
+ void smtp_rcpt(arg) char *arg; {
+@@ -258,6 +267,10 @@
+   }
+   else
+     if (!addrallowed()) { err_nogateway(); return; }
++  if (!realrcptto(addr.s)) {
++    out("550 sorry, no mailbox here by that name. (#5.1.1)\r\n");
++    return;
++  }
+   if (!stralloc_cats(&rcptto,"T")) die_nomem();
+   if (!stralloc_cats(&rcptto,addr.s)) die_nomem();
+   if (!stralloc_0(&rcptto)) die_nomem();
+@@ -372,6 +385,7 @@
+  
+   if (!seenmail) { err_wantmail(); return; }
+   if (!rcptto.len) { err_wantrcpt(); return; }
++  if (realrcptto_deny()) { out("554 sorry, no mailbox here by that name. (#5.1.1)\r\n"); return; }
+   seenmail = 0;
+   if (databytes) bytestooverflow = databytes + 1;
+   if (qmail_open(&qqt) == -1) { err_qqt(); return; }
+diff -Naur qmail-1.03-orig/realrcptto.c qmail-1.03/realrcptto.c
+--- qmail-1.03-orig/realrcptto.c	1969-12-31 19:00:00.000000000 -0500
++++ qmail-1.03/realrcptto.c	2006-12-09 18:33:04.000000000 -0500
+@@ -0,0 +1,336 @@
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <unistd.h>
++#include <pwd.h>
++#include "auto_break.h"
++#include "auto_usera.h"
++#include "byte.h"
++#include "case.h"
++#include "cdb.h"
++#include "constmap.h"
++#include "error.h"
++#include "fmt.h"
++#include "open.h"
++#include "str.h"
++#include "stralloc.h"
++#include "uint32.h"
++#include "substdio.h"
++#include "env.h"
++
++extern void die_nomem();
++extern void die_control();
++extern void die_cdb();
++extern void die_sys();
++
++static stralloc envnoathost = {0};
++static stralloc percenthack = {0};
++static stralloc locals = {0};
++static stralloc vdoms = {0};
++static struct constmap mappercenthack;
++static struct constmap maplocals;
++static struct constmap mapvdoms;
++
++static char *dash;
++static char *extension;
++static char *local;
++static struct passwd *pw;
++
++static char errbuf[128];
++static struct substdio sserr = SUBSTDIO_FDBUF(write,2,errbuf,sizeof errbuf);
++
++static char pidbuf[64];
++static char remoteipbuf[64]=" ";
++
++static int flagdenyall;
++static int flagdenyany;
++
++void realrcptto_init()
++{
++  char *x;
++
++  if (control_rldef(&envnoathost,"control/envnoathost",1,"envnoathost") != 1)
++    die_control();
++
++  if (control_readfile(&locals,"control/locals",1) != 1) die_control();
++  if (!constmap_init(&maplocals,locals.s,locals.len,0)) die_nomem();
++  switch(control_readfile(&percenthack,"control/percenthack",0)) {
++    case -1: die_control();
++    case 0: if (!constmap_init(&mappercenthack,"",0,0)) die_nomem();
++    case 1:
++      if (!constmap_init(&mappercenthack,percenthack.s,percenthack.len,0))
++        die_nomem();
++  }
++  switch(control_readfile(&vdoms,"control/virtualdomains",0)) {
++    case -1: die_control();
++    case 0: if (!constmap_init(&mapvdoms,"",0,1)) die_nomem();
++    case 1: if (!constmap_init(&mapvdoms,vdoms.s,vdoms.len,1)) die_nomem();
++  }
++
++  str_copy(pidbuf + fmt_ulong(pidbuf,getpid())," ");
++  x=env_get("PROTO");
++  if (x) {
++    static char const remoteip[]="REMOTEIP";
++    unsigned int len = str_len(x);
++    if (len <= sizeof remoteipbuf - sizeof remoteip) {
++      byte_copy(remoteipbuf,len,x);
++      byte_copy(remoteipbuf + len,sizeof remoteip,remoteip);
++      x = env_get(remoteipbuf);
++      len = str_len(x);
++      if (len + 1 < sizeof remoteipbuf) {
++        byte_copy(remoteipbuf,len,x);
++        remoteipbuf[len]=' ';
++        remoteipbuf[len + 1]='\0';
++      }
++    }
++  }
++
++  x = env_get("QMAILRRTDENYALL");
++  flagdenyall = (x && x[0]=='1' && x[1]=='\0');
++}
++
++void realrcptto_start()
++{
++  flagdenyany = 0;
++}
++
++static int denyaddr(addr)
++char *addr;
++{
++  substdio_puts(&sserr,"realrcptto ");
++  substdio_puts(&sserr,pidbuf);
++  substdio_puts(&sserr,remoteipbuf);
++  substdio_puts(&sserr,addr);
++  substdio_puts(&sserr,"\n");
++  substdio_flush(&sserr);
++  flagdenyany = 1;
++  return flagdenyall;
++}
++
++static void stat_error(path,error)
++char* path;
++int error;
++{
++  substdio_puts(&sserr,"unable to stat ");
++  substdio_puts(&sserr,path);
++  substdio_puts(&sserr,": ");
++  substdio_puts(&sserr,error_str(error));
++  substdio_puts(&sserr,"\n");
++  substdio_flush(&sserr);
++}
++
++#define GETPW_USERLEN 32
++
++static int userext()
++{
++  char username[GETPW_USERLEN];
++  struct stat st;
++
++  extension = local + str_len(local);
++  for (;;) {
++    if (extension - local < sizeof(username))
++      if (!*extension || (*extension == *auto_break)) {
++	byte_copy(username,extension - local,local);
++	username[extension - local] = 0;
++	case_lowers(username);
++	errno = 0;
++	pw = getpwnam(username);
++	if (errno == error_txtbsy) die_sys();
++	if (pw)
++	  if (pw->pw_uid)
++	    if (stat(pw->pw_dir,&st) == 0) {
++	      if (st.st_uid == pw->pw_uid) {
++		dash = "";
++		if (*extension) { ++extension; dash = "-"; }
++		return 1;
++	      }
++	    }
++	    else
++	      if (error_temp(errno)) die_sys();
++      }
++    if (extension == local) return 0;
++    --extension;
++  }
++}
++
++int realrcptto(addr)
++char *addr;
++{
++  char *homedir;
++  static stralloc localpart = {0};
++  static stralloc lower = {0};
++  static stralloc nughde = {0};
++  static stralloc wildchars = {0};
++  static stralloc safeext = {0};
++  static stralloc qme = {0};
++  unsigned int i,at;
++
++  /* Short circuit, or full logging?  Short circuit. */
++  if (flagdenyall && flagdenyany) return 1;
++
++  /* qmail-send:rewrite */
++  if (!stralloc_copys(&localpart,addr)) die_nomem();
++  i = byte_rchr(localpart.s,localpart.len,'@');
++  if (i == localpart.len) {
++    if (!stralloc_cats(&localpart,"@")) die_nomem();
++    if (!stralloc_cat(&localpart,&envnoathost)) die_nomem();
++  }
++  while (constmap(&mappercenthack,localpart.s + i + 1,localpart.len - i - 1)) {
++    unsigned int j = byte_rchr(localpart.s,i,'%');
++    if (j == i) break;
++    localpart.len = i;
++    i = j;
++    localpart.s[i] = '@';
++  }
++  at = byte_rchr(localpart.s,localpart.len,'@');
++  if (constmap(&maplocals,localpart.s + at + 1,localpart.len - at - 1)) {
++    localpart.len = at;
++    localpart.s[at] = '\0';
++  } else {
++    unsigned int xlen,newlen;
++    char *x;
++    for (i = 0;;++i) {
++      if (i > localpart.len) return 1;
++      if (!i || (i == at + 1) || (i == localpart.len) ||
++          ((i > at) && (localpart.s[i] == '.'))) {
++        x = constmap(&mapvdoms,localpart.s + i,localpart.len - i);
++        if (x) break;
++      }
++    }
++    if (!*x) return 1;
++    xlen = str_len(x) + 1;  /* +1 for '-' */
++    newlen = xlen + at + 1; /* +1 for \0 */
++    if (xlen < 1 || newlen - 1 < xlen || newlen < 1 ||
++        !stralloc_ready(&localpart,newlen))
++      die_nomem();
++    localpart.s[newlen - 1] = '\0';
++    byte_copyr(localpart.s + xlen,at,localpart.s);
++    localpart.s[xlen - 1] = '-';
++    byte_copy(localpart.s,xlen - 1,x);
++    localpart.len = newlen;
++  }
++
++  /* qmail-lspawn:nughde_get */
++  {
++    int r,fd,flagwild;
++    if (!stralloc_copys(&lower,"!")) die_nomem();
++    if (!stralloc_cats(&lower,localpart.s)) die_nomem();
++    if (!stralloc_0(&lower)) die_nomem();
++    case_lowerb(lower.s,lower.len);
++    if (!stralloc_copys(&nughde,"")) die_nomem();
++    fd = open_read("users/cdb");
++    if (fd == -1) {
++      if (errno != error_noent) die_cdb();
++    } else {
++      uint32 dlen;
++      r = cdb_seek(fd,"",0,&dlen);
++      if (r != 1) die_cdb();
++      if (!stralloc_ready(&wildchars,(unsigned int) dlen)) die_nomem();
++      wildchars.len = dlen;
++      if (cdb_bread(fd,wildchars.s,wildchars.len) == -1) die_cdb();
++      i = lower.len;
++      flagwild = 0;
++      do { /* i > 0 */
++        if (!flagwild || (i == 1) ||
++            (byte_chr(wildchars.s,wildchars.len,lower.s[i - 1])
++             < wildchars.len)) {
++          r = cdb_seek(fd,lower.s,i,&dlen);
++          if (r == -1) die_cdb();
++          if (r == 1) {
++            char *x;
++            if (!stralloc_ready(&nughde,(unsigned int) dlen)) die_nomem();
++            nughde.len = dlen;
++            if (cdb_bread(fd,nughde.s,nughde.len) == -1) die_cdb();
++            if (flagwild)
++              if (!stralloc_cats(&nughde,localpart.s + i - 1)) die_nomem();
++            if (!stralloc_0(&nughde)) die_nomem();
++            close(fd);
++            x=nughde.s;
++            /* skip username */
++            x += byte_chr(x,nughde.s + nughde.len - x,'\0');
++            if (x == nughde.s + nughde.len) return 1;
++            ++x;
++            /* skip uid */
++            x += byte_chr(x,nughde.s + nughde.len - x,'\0');
++            if (x == nughde.s + nughde.len) return 1;
++            ++x;
++            /* skip gid */
++            x += byte_chr(x,nughde.s + nughde.len - x,'\0');
++            if (x == nughde.s + nughde.len) return 1;
++            ++x;
++            /* skip homedir */
++            homedir=x;
++            x += byte_chr(x,nughde.s + nughde.len - x,'\0');
++            if (x == nughde.s + nughde.len) return 1;
++            ++x;
++            /* skip dash */
++            dash=x;
++            x += byte_chr(x,nughde.s + nughde.len - x,'\0');
++            if (x == nughde.s + nughde.len) return 1;
++            ++x;
++            extension=x;
++            goto got_nughde;
++          }
++        }
++        --i;
++        flagwild = 1;
++      } while (i);
++      close(fd);
++    }
++  }
++
++  /* qmail-getpw */
++  local = localpart.s;
++  if (!userext()) {
++    extension = local;
++    dash = "-";
++    pw = getpwnam(auto_usera);
++  }
++  if (!pw) return denyaddr(addr);
++  if (!stralloc_copys(&nughde,pw->pw_dir)) die_nomem();
++  if (!stralloc_0(&nughde)) die_nomem();
++  homedir=nughde.s;
++
++  got_nughde:
++
++  /* qmail-local:qmesearch */
++  if (!*dash) return 1;
++  if (!stralloc_copys(&safeext,extension)) die_nomem();
++  case_lowerb(safeext.s,safeext.len);
++  for (i = 0;i < safeext.len;++i)
++    if (safeext.s[i] == '.')
++      safeext.s[i] = ':';
++  {
++    struct stat st;
++    int i;
++    if (!stralloc_copys(&qme,homedir)) die_nomem();
++    if (!stralloc_cats(&qme,"/.qmail")) die_nomem();
++    if (!stralloc_cats(&qme,dash)) die_nomem();
++    if (!stralloc_cat(&qme,&safeext)) die_nomem();
++    if (!stralloc_0(&qme)) die_nomem();
++    if (stat(qme.s,&st) == 0) return 1;
++    if (errno != error_noent) {
++      stat_error(qme.s,errno);
++      return 1;
++    }
++    for (i = safeext.len;i >= 0;--i)
++      if (!i || (safeext.s[i - 1] == '-')) {
++        if (!stralloc_copys(&qme,homedir)) die_nomem();
++        if (!stralloc_cats(&qme,"/.qmail")) die_nomem();
++        if (!stralloc_cats(&qme,dash)) die_nomem();
++        if (!stralloc_catb(&qme,safeext.s,i)) die_nomem();
++        if (!stralloc_cats(&qme,"default")) die_nomem();
++        if (!stralloc_0(&qme)) die_nomem();
++        if (stat(qme.s,&st) == 0) return 1;
++        if (errno != error_noent) {
++          stat_error(qme.s,errno);
++          return 1;
++        }
++      }
++    return denyaddr(addr);
++  }
++}
++
++int realrcptto_deny()
++{
++  return flagdenyall && flagdenyany;
++}
