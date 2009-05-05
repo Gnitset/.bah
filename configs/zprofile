@@ -39,7 +39,7 @@ fi
 RPROMPT=$'%{\e[31m%}%# %{\e[m%}%{\e[34;1m%}%D{%a %d %b %G}%{\e[m%} %0(?:%{\e[32;1m%}:%{\e[31m%})[%?]%{\e[m%}'
 HISTSIZE=4096
 HISTFILE=~/.zsh_history
-SAVEHIST=2048
+SAVEHIST=3072
 EDITOR="vim"
 
 LC_CTYPE="sv_SE.ISO8859-15"
