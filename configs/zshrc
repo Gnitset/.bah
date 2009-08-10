@@ -63,10 +63,8 @@ update-cert() {
 	if [[ $? != 0 ]];then
 		rm ~/.svncert
 		echo error validating cert
-		exit 1
 	else
 		echo got cert
-		exit 0
 	fi
 }
 
