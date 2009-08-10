@@ -1,0 +1,16 @@
+Host *
+User gnitset
+HashKnownHosts yes
+
+Host wijk
+HostName wijk.oijk.net
+DynamicForward 12345
+
+Host doija
+HostName doija.oijk.net
+
+Host bruse
+HostName bruse.proxxi.org
+
+Host oliv
+HostName oliv.slafs.org
