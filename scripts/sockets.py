@@ -10,26 +10,28 @@ import sys
 import time
 
 class Listner(threading.Thread):
-	def __init__(self, socket, socketlist):
+	def __init__(self, socket, socketlist, debug=False):
 		threading.Thread.__init__(self)
+		self._debug = debug
 		self._socket = socket
 		self._socketlist = socketlist
 
 	def run(self):
 		assert self._socket
-		print self._socket
+		if self._debug: print self._socket
 
 		while True:
 			(clientsocket, address) = self._socket.accept()
-			print address
+			if self._debug: print address
 			clientsocket.setblocking(False)
 			self._socketlist.append(clientsocket)
 
 class ServerSocket:
-	def __init__(self, host, port, timeout=30, split="\n"):
+	def __init__(self, host, port, timeout=30, split="\n", debug=False):
 		signal.signal(signal.SIGINT,self.quit)
 		self._timeout=timeout
 		self._split=split
+		self._debug = debug
 
 		self._socketlist=[]
 		self._socketwrite={}
@@ -40,14 +42,14 @@ class ServerSocket:
 		self._socket.bind((host, port))
 		self._socket.listen(5)
 
-		self._listner=Listner(self._socket, self._socketlist)
+		self._listner=Listner(self._socket, self._socketlist, debug)
 		self._listner.start()
 
 
 	def main(self):
 		while True:
 			(read, write, error)=select.select(self._socketlist, self._socketwrite.keys(), self._socketlist, self._timeout)
-			print read, write, error
+			if self._debug: print read, write, error
 
 			for socket_ in write:
 				assert self._socketwrite[socket_]		
@@ -75,11 +77,11 @@ class ServerSocket:
 					split_data=data.split(self._split)
 					self._socketinbuf[socket_]=split_data[-1]
 					lines=split_data[:-1]
-					print ">>> halva rader"
+					if self._debug: print ">>> halva rader"
 				else:
 					lines=data[:-len(self._split)].split(self._split)
 					self._socketinbuf[socket_]=""
-					print ">>> hela rader"
+					if self._debug: print ">>> hela rader"
 
 				self.readCall(socket_, lines)
 
@@ -93,13 +95,15 @@ class ServerSocket:
 		return
 
 	def write(self, target, lines):
-		if not self._socketwrite.has_key(target):
-			self._socketwrite[target]=[]
-
-		if not self._socketwrite[target]:
-			self._socketwrite[target]=lines
+		if target != "all":
+			recipients=[target]
 		else:
-			self._socketwrite[target].extend(lines)
+			recipients=self._socketlist
+			
+		for recipient in recipients:
+			if not self._socketwrite.has_key(recipient):
+				self._socketwrite[recipient]=[]
+			self._socketwrite[recipient].extend(lines)
 
 	def quit(self, signr, frame):
 		for socket_ in self._socketlist:
@@ -114,11 +118,11 @@ class ServerSocket:
 		except: pass
 		sys.exit()
 
-class Foo(ServerSocket):
+class EchoServer(ServerSocket):
 	def readCall(self, clientsocket, lines):
-		print clientsocket, lines
+		if self._debug: print clientsocket, lines
 		self.write(clientsocket, [a+self._split for a in lines])
 
 if __name__ == "__main__":
-	s=Foo("0.0.0.0", 1234, 5)
+	s=EchoServer("0.0.0.0", 1234, 5, debug=True)
 	s.main()
