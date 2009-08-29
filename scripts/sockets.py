@@ -21,33 +21,58 @@ class Listner(threading.Thread):
 		while True:
 			(clientsocket, address) = self._socket.accept()
 			print address
+			clientsocket.setblocking(False)
 			self._socketlist.append(clientsocket)
 
 class ServerSocket:
-	def __init__(self):
+	def __init__(self, host, port, timeout=30):
 		signal.signal(signal.SIGINT,self.quit)
+		self._timeout=timeout
 
 		self._socketlist=[]
 		self._socketwrite=[]
 
 		self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self._socket.bind((socket.gethostname(), 1234))
+		self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self._socket.bind((host, port))
 		self._socket.listen(5)
 
 		self._listner=Listner(self._socket, self._socketlist)
 		self._listner.start()
 
+
+	def main(self):
 		while True:
-			(read, write, error)=select.select(self._socketlist, self._socketwrite, self._socketlist, 30)
+			(read, write, error)=select.select(self._socketlist, self._socketwrite, self._socketlist, self._timeout)
 			print read, write, error
 			for socket_ in read:
-				socket_.recv(8192)
+				data=socket_.recv(8192)
+				if not data:
+					try:
+						socket_.close()
+					finally:
+						self._socketlist.remove(socket_)
+					continue
+
+			for socket_ in error:
+				try:
+					socket_.shutdown(socket.SHUT_RDWR)
+				finally:
+					self._socketlist.remove(socket_)
 
 	def quit(self, signr, frame):
 		for socket_ in self._socketlist:
-			socket_.shutdown(socket.SHUT_RDWR)
-			socket_.close()
-		self._socket.close()
+			try:
+				socket_.shutdown(socket.SHUT_RDWR)
+			except: pass
+			try:
+				socket_.close()
+			except: pass
+		try:
+			self._socket.close()
+		except: pass
 		sys.exit()
 
-s=ServerSocket()
+if __name__ == "__main__":
+	s=ServerSocket("0.0.0.0", 1234, 5)
+	s.main()
