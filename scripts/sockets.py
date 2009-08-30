@@ -55,6 +55,7 @@ class ServerSocket:
 				assert self._socketwrite[socket_]		
 				try:
 					while self._socketwrite[socket_]:
+						if self._debug: print time.ctime(), socket_.getpeername(), "out", self._socketwrite[socket_][0].strip()
 						socket_.send(self._socketwrite[socket_].pop(0))
 					del self._socketwrite[socket_]
 				except: pass
@@ -82,6 +83,10 @@ class ServerSocket:
 					lines=data[:-len(self._split)].split(self._split)
 					self._socketinbuf[socket_]=""
 					if self._debug: print ">>> hela rader"
+				
+				if self._debug:
+					for line in lines:
+						print time.ctime(), socket_.getpeername(), "in", line.strip()
 
 				self.readCall(socket_, lines)
 
