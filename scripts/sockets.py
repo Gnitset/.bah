@@ -8,23 +8,7 @@ import threading
 import signal
 import sys
 import time
-
-class Listner(threading.Thread):
-	def __init__(self, socket, socketlist, debug=False):
-		threading.Thread.__init__(self)
-		self._debug = debug
-		self._socket = socket
-		self._socketlist = socketlist
-
-	def run(self):
-		assert self._socket
-		if self._debug: print self._socket
-
-		while True:
-			(clientsocket, address) = self._socket.accept()
-			if self._debug: print address
-			clientsocket.setblocking(False)
-			self._socketlist.append(clientsocket)
+import collections
 
 class ServerSocket:
 	def __init__(self, host, port, timeout=30, split="\n", debug=False):
@@ -33,17 +17,15 @@ class ServerSocket:
 		self._split=split
 		self._debug = debug
 
-		self._socketlist=[]
-		self._socketwrite={}
-		self._socketinbuf={}
+		self._socketlist=set()
+		self._socketwrite=dict()
+		self._socketinbuf=dict()
 
 		self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		self._socket.bind((host, port))
 		self._socket.listen(5)
-
-		self._listner=Listner(self._socket, self._socketlist, debug)
-		self._listner.start()
+		self._socketlist.add(self._socket)
 
 
 	def main(self):
@@ -51,14 +33,33 @@ class ServerSocket:
 			(read, write, error)=select.select(self._socketlist, self._socketwrite.keys(), self._socketlist, self._timeout)
 			if self._debug: print read, write, error
 
+			if self._socket in read:
+				(clientsocket, address) = self._socket.accept()
+				if self._debug: print address
+				clientsocket.setblocking(False)
+				self._socketlist.add(clientsocket)
+				read.remove(self._socket)
+
 			for socket_ in write:
 				assert self._socketwrite[socket_]		
 				try:
 					while self._socketwrite[socket_]:
-						if self._debug: print time.ctime(), socket_.getpeername(), "out", self._socketwrite[socket_][0].strip()
-						socket_.send(self._socketwrite[socket_].pop(0))
+						send_data=self._socketwrite[socket_].popleft()
+						data_sent=socket_.send(send_data)
+
+						if self._debug: print time.ctime(), socket_.getpeername(), "out", send_data[:data_sent]
+
+						if len(send_data) > data_sent:
+							self._socketwrite[socket_].appendleft(send_data[data_sent:])
+							if self._debug: print "try again, wrote %s" % data_sent
+
 					del self._socketwrite[socket_]
-				except: pass
+				except socket.error as se:
+					if se.errno == 11:
+						self._socketwrite[socket_].appendleft(send_data)
+						pass
+					else:
+						raise
 
 			for socket_ in read:
 				try:
@@ -74,21 +75,20 @@ class ServerSocket:
 						self._socketlist.remove(socket_)
 					continue
 
-				if data[-len(self._split):] != self._split:
-					split_data=data.split(self._split)
-					self._socketinbuf[socket_]=split_data[-1]
-					lines=split_data[:-1]
-					if self._debug: print ">>> halva rader"
-				else:
-					lines=data[:-len(self._split)].split(self._split)
-					self._socketinbuf[socket_]=""
-					if self._debug: print ">>> hela rader"
-				
+				split_data=data.split(self._split)
+				self._socketinbuf[socket_]=split_data[-1]
+				lines=split_data[:-1]
+				if self._debug:
+					if self._socketinbuf[socket_]:
+						print ">>> halva rader"
+					else:
+						print ">>> hela rader"
+
 				if self._debug:
 					for line in lines:
 						print time.ctime(), socket_.getpeername(), "in", line.strip()
 
-				self.readCall(socket_, lines)
+				if lines: self.readCall(socket_, lines)
 
 			for socket_ in error:
 				try:
@@ -97,17 +97,17 @@ class ServerSocket:
 					self._socketlist.remove(socket_)
 
 	def readCall(self, clientsocket, lines):
-		return
+		raise NotImplemented
 
 	def write(self, target, lines):
 		if target != "all":
 			recipients=[target]
 		else:
-			recipients=self._socketlist
+			recipients=self._socketlist ^ set([self._socket])
 			
 		for recipient in recipients:
 			if not self._socketwrite.has_key(recipient):
-				self._socketwrite[recipient]=[]
+				self._socketwrite[recipient]=collections.deque()
 			self._socketwrite[recipient].extend(lines)
 
 	def quit(self, signr, frame):
@@ -123,11 +123,11 @@ class ServerSocket:
 		except: pass
 		sys.exit()
 
-class EchoServer(ServerSocket):
-	def readCall(self, clientsocket, lines):
-		if self._debug: print clientsocket, lines
-		self.write(clientsocket, [a+self._split for a in lines])
-
 if __name__ == "__main__":
+	class EchoServer(ServerSocket):
+		def readCall(self, clientsocket, lines):
+			if self._debug: print clientsocket, lines
+			self.write(clientsocket, [a+self._split for a in lines])
+
 	s=EchoServer("0.0.0.0", 1234, 5, debug=True)
 	s.main()
