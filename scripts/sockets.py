@@ -54,7 +54,7 @@ class ServerSocket:
 							if self._debug: print "try again, wrote %s" % data_sent
 
 					del self._socketwrite[socket_]
-				except socket.error as se:
+				except socket.error, se:
 					if se.errno == 11:
 						self._socketwrite[socket_].appendleft(send_data)
 						pass
