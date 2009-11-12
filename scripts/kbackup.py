@@ -13,6 +13,10 @@ sources["web.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "passwo
 sources["mail.oijk.net"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
 sources["svn.ladan.se"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
 
+if "--force" in sys.argv:
+	for host in sources:
+		sources[host]['interval']="f"
+
 def main():
 	print time.asctime(time.localtime())
 	try:
@@ -52,6 +56,7 @@ class KBackup():
 		self.root=root
 		self.host=host
 		self.debug=debug
+		self.conf=conf
 		try:
 			assert conf["keep"] > 0
 			self.keep=conf["keep"]
@@ -71,12 +76,12 @@ class KBackup():
 
 	def eligable(self):
 		now=time.time()
-		if self.conf['iterval'] == 'd':
+		if self.conf['interval'] == 'd':
 			diff=((23*60)+30)*60			# sync after 23h and 30min
-		elif self.conf['iterval'] == 'h':
-			diff=50*60						# sync after 50min
+		elif self.conf['interval'] == 'h':
+			diff=50*60				# sync after 50min
 		else:
-			diff=0							# always sync
+			diff=0					# always sync
 		if self.last_backup+diff < now:
 			return True
 		else:
