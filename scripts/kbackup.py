@@ -1,4 +1,4 @@
-#! /usr/bin/env python2.5
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os, sys, time
@@ -26,10 +26,13 @@ def main():
 	try:
 		for host in sources:
 			kb=KBackup(root, host, sources[host], debug)
-			kb.rotate()
-			kb.sync()
-			if debug:
-				print host, "completed"
+			if kb.eligable():
+				kb.rotate()
+				kb.sync()
+				if debug:
+					print host,"completed"
+			else:
+				print host,"not eligable"
 		print time.asctime(time.localtime())
 
 	finally:
@@ -59,12 +62,25 @@ class KBackup():
 		try:
 			self.password=conf["password"]
 		except: pass
+		self.last_backup=time.mktime(time.strptime(os.readlink(os.path.join(self.root, self.host, "current")), "%Y/%m/%d/%H:%M:%S"))
 		try:
 			os.mkdir(os.path.join(self.root, self.host))
 		except OSError, oe:
 			if oe.errno != 17:
 				raise
 
+	def eligable(self):
+		now=time.time()
+		if self.conf['iterval'] == 'd':
+			diff=((23*60)+30)*60			# sync after 23h and 30min
+		elif self.conf['iterval'] == 'h':
+			diff=50*60						# sync after 50min
+		else:
+			diff=0							# always sync
+		if self.last_backup+diff < now:
+			return True
+		else:
+			return False
 
 	def rotate(self):
 		bort=[]
@@ -104,7 +120,7 @@ class KBackup():
 		
 		if len(bort) > 0:
 			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
-				print "error deleting,", bort
+				sys.stderr.write("error deleting, %s\n"%bort)
 
 		return True
 
@@ -122,7 +138,7 @@ class KBackup():
 		if ret_val > 0:
 			print "cleanup"
 			os.spawnvp(os.P_WAIT, "rm", ["rm", "-r", new])
-			sys.exit(2)
+			print self.host,"failed"
 
 		stime=time.time()
 		dirbase='/'.join([str(de).zfill(2) for de in time.localtime(stime)[0:3]])
