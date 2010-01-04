@@ -1,0 +1,1 @@
+ldapvi --discover -D cn=Manager,dc=ladan,dc=se --host gw.ladan.se
