@@ -27,6 +27,10 @@ bindkey '^r' history-incremental-search-backward
 bindkey '^y' yank
 bindkey '^x' copy-prev-shell-word
 bindkey '^z' vi-undo-change
+bindkey "\e[A" up-line-or-history	# up
+bindkey "\e[B" down-line-or-history	# down
+bindkey "\e[C" vi-forward-char		# right
+bindkey "\e[D" vi-backward-char		# left
 bindkey "\e[1~" beginning-of-line	# home
 bindkey "\e[2~" quoted-insert		# insert
 bindkey "\e[3~" delete-char			# delete
