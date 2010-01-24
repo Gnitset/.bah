@@ -87,6 +87,16 @@ class KBackup():
 		else:
 			return False
 
+	def walkrm(self, dir, maxdepth=3, depth=1):
+		for file in os.listdir(dir):
+			path=os.path.join(dir,file)
+			if os.path.isdir(path):
+				if depth < maxdepth:
+					self.walkrm(path, maxdepth, depth+1)
+				try:
+					os.rmdir(path)
+				except OSError: pass
+
 	def rotate(self):
 		bort=[]
 
@@ -126,6 +136,8 @@ class KBackup():
 		if len(bort) > 0:
 			if os.spawnvp(os.P_WAIT, "rm", ["rm", "-r"]+bort):
 				sys.stderr.write("error deleting, %s\n"%bort)
+
+		self.walkrm(os.path.join(self.root, self.host))
 
 		return True
 
