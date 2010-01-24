@@ -8,10 +8,10 @@ umask 022
 setopt ALL_EXPORT
 if [ "$EUID" = "0" ] || [ "$USER" = "root" ] ; then
 		PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${ROOTPATH}"
-		PROMPT=$'%{\e[31;1m%}%n%{\e[m%}%{\e[32;1m%}@%5m%{\e[m%} %{\e[34;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[34;1m%}%T%{\e[m%} %{\e[31;1m%}%# %{\e[m%}'
+		PROMPT=$'%{\e[31;1m%}%n%{\e[m%}%{\e[32;1m%}@%5m%{\e[m%} %{\e[33;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[33;1m%}%T%{\e[m%} %{\e[31;1m%}%# %{\e[m%}'
 else
 		PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
-		PROMPT=$'%{\e[32;1m%}%n@%5m%{\e[m%} %{\e[34;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[34;1m%}%T%{\e[m%} %{\e[31m%}%# %{\e[m%}'
+		PROMPT=$'%{\e[32;1m%}%n@%5m%{\e[m%} %{\e[33;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[33;1m%}%T%{\e[m%} %{\e[31m%}%# %{\e[m%}'
 fi
 
 if [[ -d ~/bin ]] ; then
@@ -36,7 +36,7 @@ if [[ -d /Library/Frameworks/Python.framework/Versions/Current/bin ]] ; then
 		PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:${PATH}"
 fi
 
-RPROMPT=$'%{\e[31m%}%# %{\e[m%}%{\e[34;1m%}%D{%a %d %b %G}%{\e[m%} %0(?:%{\e[32;1m%}:%{\e[31m%})[%?]%{\e[m%}'
+RPROMPT=$'%{\e[31m%}%# %{\e[m%}%{\e[33;1m%}%D{%a %d %b %G}%{\e[m%} %0(?:%{\e[32;1m%}:%{\e[31m%})[%?]%{\e[m%}'
 HISTSIZE=4096
 HISTFILE=~/.zsh_history
 SAVEHIST=3072

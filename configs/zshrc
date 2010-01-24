@@ -49,7 +49,6 @@ bindkey "\e[6~" shell-forward-word	# pgdn
 alias py=python
 alias find='noglob find'
 alias woi='ssh wijk -t screen -Dr'
-alias doi='ssh doija -t screen -Dr'
 alias soi='ssh soija -t screen -Dr'
 alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.ISO8859-15 mutt'
 alias gate="ssh -A gate.ladan.se -t"
@@ -85,17 +84,22 @@ update-zsh() {
 
 update-conf() {
 	emulate -L zsh
-	echo updating ${1}-config
-	if [[ ${1} == "ssh" ]] ;then
-		mkdir -p ~/.ssh
-		get https://svn.ladan.se/bah/configs/ssh_config rapidssl >~/.ssh/config_ && mv ~/.ssh/config_ ~/.ssh/config && echo ssh/config updated.
-		get https://svn.ladan.se/bah/configs/ssh_authorized_keys rapidssl >~/.ssh/authorized_keys_ && mv ~/.ssh/authorized_keys_ ~/.ssh/authorized_keys && echo ssh/authorized_keys updated.
-	elif [[ ${1} == "mutt" ]] ;then
-		file=muttrc
-		get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
-	elif [[ ${1} == "screen" ]] ;then
-		file=screenrc
-		get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
+	if [[ x${1} != x"" ]] ;then
+		echo updating ${1}-config
+		if [[ ${1} == "ssh" ]] ;then
+			mkdir -p ~/.ssh
+			get https://svn.ladan.se/bah/configs/ssh_config rapidssl >~/.ssh/config_ && mv ~/.ssh/config_ ~/.ssh/config && echo ssh/config updated.
+			get https://svn.ladan.se/bah/configs/ssh_authorized_keys rapidssl >~/.ssh/authorized_keys_ && mv ~/.ssh/authorized_keys_ ~/.ssh/authorized_keys && echo ssh/authorized_keys updated.
+		elif [[ ${1} == "mutt" ]] ;then
+			file=muttrc
+			get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
+		elif [[ ${1} == "screen" ]] ;then
+			file=screenrc
+			get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
+		fi
+	else
+		echo missing argument
+		echo Usage: update-conf application
 	fi
 }
 
