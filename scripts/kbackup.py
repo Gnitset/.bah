@@ -18,17 +18,24 @@ if "--force" in sys.argv:
 		sources[host]['interval']="f"
 
 def main():
+	retcode=0
 	print time.asctime(time.localtime())
 	try:
 		os.stat(os.path.join(root,lockfile))
 		print "lockfile exists"
+		os.kill(int(open(os.path.join(root,lockfile)).read()), 0)
+		print "and kbackup is still running"
 		sys.exit(1)
-	except: pass
+	except OSError as e:
+		if e.errno==3:
+			print "but the process seems to be dead, removing pidfile"
+			os.remove(os.path.join(root,lockfile))
 
 	open(os.path.join(root, lockfile), "w").write(str(os.getpid()))
 
-	try:
-		for host in sources:
+	for host in sources:
+		try:
+			print "starting backup of %s"%host
 			kb=KBackup(root, host, sources[host], debug)
 			if kb.eligable():
 				kb.rotate()
@@ -37,10 +44,13 @@ def main():
 					print host,"completed"
 			else:
 				print host,"not eligable"
+		except e:
+			print "Exception: %s"%str(e)
+			retcode=1
 		print time.asctime(time.localtime())
 
-	finally:
-		os.remove(os.path.join(root,lockfile))
+	os.remove(os.path.join(root,lockfile))
+	sys.exit(retcode)
 
 class KBackup():
 	root=""
