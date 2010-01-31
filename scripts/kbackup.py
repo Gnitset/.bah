@@ -3,15 +3,21 @@
 
 import os, sys, time
 
-root="/a/backup/kbackup"
+try:
+	from kbackup_conf import root, lockfile, sources, debug
+except:
+	print """Unable to import required conf parameters from kbackup_conf.py
+
+examplefile:
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+root="/backup/data"
 lockfile=".kbackup.lock"
 sources={}
-debug=True
 
-sources["doija.int.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
-sources["web.ladan.se"]={ "interval": "d", "keep": 30, "user": "backup", "password": "ChangeMe" }
-sources["mail.oijk.net"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
-sources["svn.ladan.se"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }
+sources["host.domain.tld"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }"""
+	sys.exit(1)
 
 if "--force" in sys.argv:
 	for host in sources:
@@ -26,7 +32,7 @@ def main():
 		os.kill(int(open(os.path.join(root,lockfile)).read()), 0)
 		print "and kbackup is still running"
 		sys.exit(1)
-	except OSError as e:
+	except OSError, e:
 		if e.errno==3:
 			print "but the process seems to be dead, removing pidfile"
 			os.remove(os.path.join(root,lockfile))
@@ -77,7 +83,10 @@ class KBackup():
 		try:
 			self.password=conf["password"]
 		except: pass
-		self.last_backup=time.mktime(time.strptime(os.readlink(os.path.join(self.root, self.host, "current")), "%Y/%m/%d/%H:%M:%S"))
+		try:
+			self.last_backup=time.mktime(time.strptime(os.readlink(os.path.join(self.root, self.host, "current")), "%Y/%m/%d/%H:%M:%S"))
+		except:
+			self.last_backup=0
 		try:
 			os.mkdir(os.path.join(self.root, self.host))
 		except OSError, oe:
@@ -97,7 +106,7 @@ class KBackup():
 		else:
 			return False
 
-	def walkrm(self, dir, maxdepth=3, depth=1):
+	def walkrm(self, dir, maxdepth=3, depth=0):
 		for file in os.listdir(dir):
 			path=os.path.join(dir,file)
 			if os.path.isdir(path):
