@@ -107,11 +107,11 @@ get() {
 	emulate -L zsh
 	if which curl >/dev/null; then
 		if [[ -z $2 ]];then
-			curl "$1"
+			curl -4 "$1"
 		elif [[ x$2 == "xnosslcheck" ]];then
-			curl -k "$1"
+			curl -4 -k "$1"
 		elif [[ x$2 == "xrapidssl" ]];then
-			curl --cacert ~/.svncert "$1"
+			curl -4 --cacert ~/.svncert "$1"
 		fi
 	elif which wget >/dev/null; then
 		if [[ -z $2 ]];then
