@@ -7,3 +7,4 @@ lvcreate -L 2048M -v -ndevdomu_slash vg
 lvreduce -L -64M vg/web_slash
 pvdisplay /dev/md3
 lvremove vg/foobar
+lvs --options lv_name,vg_name,lv_attr,lv_size,devices
