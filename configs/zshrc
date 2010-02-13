@@ -17,6 +17,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion:*:descriptions' format '%U%B%d%b%u'
 zstyle ':completion:*:warnings' format '%BSorry, no matches for: %d%b'
+zstyle ':completion:*' special-dirs true
 
 autoload -U compinit
 compinit -d ~/.zcompdump.`hostname`
@@ -25,18 +26,19 @@ bindkey '^a' beginning-of-line
 bindkey '^e' end-of-line
 bindkey '^r' history-incremental-search-backward
 bindkey '^y' yank
+bindkey '^t' delete-word
 bindkey '^x' copy-prev-shell-word
 bindkey '^z' vi-undo-change
-bindkey "\e[A" up-line-or-history	# up
-bindkey "\e[B" down-line-or-history	# down
-bindkey "\e[C" vi-forward-char		# right
-bindkey "\e[D" vi-backward-char		# left
-bindkey "\e[1~" beginning-of-line	# home
-bindkey "\e[2~" quoted-insert		# insert
-bindkey "\e[3~" delete-char			# delete
-bindkey "\e[4~" end-of-line			# end
-bindkey "\e[5~" shell-backward-word	# pgup
-bindkey "\e[6~" shell-forward-word	# pgdn
+bindkey "\e[A" up-line-or-history		# up
+bindkey "\e[B" down-line-or-history		# down
+bindkey "\e[C" vi-forward-char			# right
+bindkey "\e[D" vi-backward-char			# left
+bindkey "\e[1~" shell-backward-word		# home
+bindkey "\e[2~" quoted-insert			# insert
+bindkey "\e[3~" delete-char				# delete
+bindkey "\e[4~" shell-forward-word		# end
+bindkey "\e[5~" history-search-backward	# pgup
+bindkey "\e[6~" history-search-forward	# pgdn
 #bindkey "\e[7~" beginning-of-line
 #bindkey "\e[8~" end-of-line
 #bindkey "\e[H" beginning-of-line
@@ -52,7 +54,7 @@ alias woi='ssh wijk -t screen -Dr'
 alias soi='ssh soija -t screen -Dr'
 alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.ISO8859-15 mutt'
 alias gate="ssh -A gate.ladan.se -t"
-
+alias webs='python -m SimpleHTTPServer'
 
 update-cert() {
 	emulate -L zsh
@@ -76,10 +78,7 @@ update-zsh() {
 	echo updating zsh-config
 	get https://svn.ladan.se/bah/configs/zshrc rapidssl >~/.zshrc_ && mv ~/.zshrc_ ~/.zshrc && echo zshrc updated.
 	get https://svn.ladan.se/bah/configs/zprofile rapidssl >~/.zprofile_ && mv ~/.zprofile_ ~/.zprofile && echo zprofile updated.
-	if [[ -f ~/.zshrc.user ]] ; then
-		get http://doija.oijk.net/zsh/zsh_latest/users/$USER >~/.zshrc.user_ && mv ~/.zshrc.user_ ~/.zshrc.user && echo zshrc.user updated.
-	fi
-	rm ~/.zcompdump.*
+	rm ~/.zcompdump.* 2> /dev/null
 }
 
 update-conf() {
