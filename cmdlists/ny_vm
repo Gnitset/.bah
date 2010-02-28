@@ -1,12 +1,16 @@
-lvcreate -L 3072M -v -nweb_slash vg
-lvcreate -L 512M -v -nweb_swap vg
-mke2fs -j -i 4096 -L web_slash /dev/vg/web_slash
-mkswap /dev/vg/web_swap
-mount /dev/vg/web_slash /mnt/target
-rsync -aH /mnt/dev/ /mnt/target
-sed -i -e 's/localhost/web/g' /mnt/target/etc/conf.d/hostname
-less /mnt/target/etc/conf.d/net /mnt/target/etc/hosts
-rm /mnt/target/etc/ssh/ssh_host_*
+lvcreate -L 3072M -v -nHOSTNAME_slash vg
+lvcreate -L 512M -v -nHOSTNAME_swap vg
+mke2fs -j -i 4096 -L HOSTNAME_slash /dev/vg/HOSTNAME_slash
+mkswap /dev/vg/HOSTNAME_swap
+mount /dev/vg/HOSTNAME_slash /mnt/target
+cd /mnt/target
+tar xjpf ../dev/root/stage4.tar.bz2
+chroot .
+sh root/STUFF_TO_DO HOSTNAME IP
+exit
+cd
 umount /mnt/target
-sed -e 's/DEFAULT/web/g' /etc/xen/DEFAULT.ladan.se > /etc/xen/web.ladan.se
-xm create web.ladan.se -c
+sed -e 's/dev-domU/HOSTNAME/g' -e 's/dev_/HOSTNAME_/g' /etc/xen/dev-domU.ladan.se >> /etc/xen/HOSTNAME.ladan.se
+xm create HOSTNAME.ladan.se -c
+
+emerge -av --ignore-default-opts fcron
