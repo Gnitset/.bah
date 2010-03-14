@@ -52,7 +52,7 @@ alias py=python
 alias find='noglob find'
 alias woi='ssh wijk -t screen -Dr'
 alias soi='ssh soija -t screen -Dr'
-alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.ISO8859-15 mutt'
+alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.UTF-8 mutt'
 alias gate="ssh -A gate.ladan.se -t"
 alias webs='python -m SimpleHTTPServer'
 
@@ -111,14 +111,6 @@ get() {
 			curl -4 -k "$1"
 		elif [[ x$2 == "xrapidssl" ]];then
 			curl -4 --cacert ~/.svncert "$1"
-		fi
-	elif which wget >/dev/null; then
-		if [[ -z $2 ]];then
-			wget -O - "$1"
-		elif [[ x$2 == "xnosslcheck" ]];then
-			wget --no-check-certificate -O - "$1"
-		elif [[ x$2 == "xrapidssl" ]];then
-			wget --certificate=~/.svncert -O - "$1"
 		fi
 	else
 		return 2
