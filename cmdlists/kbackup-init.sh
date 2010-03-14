@@ -6,7 +6,7 @@ cat >> /etc/rsyncd.conf << EOF
 
 [backup]
 	path = /backup
-	hosts allow = maijna.ladan.se
+	hosts allow = 10.11.12.9
 	auth users = backup
 	secrets file = /etc/rsyncd.secrets
 	uid = 0

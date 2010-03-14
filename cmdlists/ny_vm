@@ -1,7 +1,7 @@
 lvcreate -L 3072M -v -nHOSTNAME_slash vg
 lvcreate -L 512M -v -nHOSTNAME_swap vg
 mke2fs -j -i 4096 -L HOSTNAME_slash /dev/vg/HOSTNAME_slash
-mkswap /dev/vg/HOSTNAME_swap
+mkswap -f /dev/vg/HOSTNAME_swap
 mount /dev/vg/HOSTNAME_slash /mnt/target
 cd /mnt/target
 tar xjpf ../dev/root/stage4.tar.bz2

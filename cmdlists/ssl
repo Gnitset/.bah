@@ -1,1 +1,1 @@
-openssl req -new -nodes -keyout wijk.oijk.net.key -out wijk.oijk.net.csr
+openssl req -new -nodes -keyout HOSTNAME.key -out HOSTNAME.csr
