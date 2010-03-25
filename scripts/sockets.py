@@ -126,8 +126,9 @@ class ServerSocket:
 if __name__ == "__main__":
 	class EchoServer(ServerSocket):
 		def readCall(self, clientsocket, lines):
-			if self._debug: print clientsocket, lines
+			if [a for a in lines if a.startswith("all")]:
+				clientsocket="all"
 			self.write(clientsocket, [a+self._split for a in lines])
 
-	s=EchoServer("0.0.0.0", 1234, 5, debug=True)
+	s=EchoServer("0.0.0.0", 1234, debug=True)
 	s.main()
