@@ -1,0 +1,5 @@
+ezmlm-make -lfgrqtu -5 lista@servern.info /home/email/ezmlm/testlist_oijk.net /home/email/.qmails/oijk-testlist TestList oijk.net
+ezmlm-sub /home/email/ezmlm/testlist_oijk.net/mod gnitset@servern.info
+ezmlm-sub /home/email/ezmlm/testlist_oijk.net gnitset@servern.info
+echo reply-to >> /home/email/ezmlm/testlist_oijk.net/headerremove
+echo "Reply-To: testlist@oijk.net" >> /home/email/ezmlm/testlist_oijk.net/headeradd
