@@ -62,11 +62,7 @@ class ServerSocket:
 						raise
 
 			for socket_ in read:
-				try:
-					data=self._socketinbuf[socket_]+socket_.recv(8192)
-				except:
-					self._socketinbuf[socket_]=""
-					data=socket_.recv(8192)
+				data=self._socketinbuf.get(socket_,"")+socket_.recv(8192)
 
 				if not data:
 					try:
