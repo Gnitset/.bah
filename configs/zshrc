@@ -29,16 +29,16 @@ bindkey '^y' yank
 bindkey '^t' delete-word
 bindkey '^x' copy-prev-shell-word
 bindkey '^z' vi-undo-change
-bindkey "\e[A" history-beginning-search-backward # up
-bindkey "\e[B" history-beginning-search-forward  # down
-bindkey "\e[C" vi-forward-char                   # right
-bindkey "\e[D" vi-backward-char                  # left
-bindkey "\e[1~" shell-backward-word              # home
-bindkey "\e[2~" quoted-insert                    # insert
-bindkey "\e[3~" delete-char                      # delete
-bindkey "\e[4~" shell-forward-word               # end
-bindkey "\e[5~" history-search-backward          # pgup
-bindkey "\e[6~" history-search-forward           # pgdn
+bindkey "\e[A" history-search-backward            # up
+bindkey "\e[B" history-search-forward             # down
+bindkey "\e[C" vi-forward-char                    # right
+bindkey "\e[D" vi-backward-char                   # left
+bindkey "\e[1~" shell-backward-word               # home
+bindkey "\e[2~" quoted-insert                     # insert
+bindkey "\e[3~" delete-char                       # delete
+bindkey "\e[4~" shell-forward-word                # end
+bindkey "\e[5~" history-beginning-search-backward # pgup
+bindkey "\e[6~" history-beginning-search-forward  # pgdn
 #bindkey "\e[7~" beginning-of-line
 #bindkey "\e[8~" end-of-line
 #bindkey "\e[H" beginning-of-line
@@ -58,15 +58,29 @@ alias webs='python -m SimpleHTTPServer'
 
 update-zsh() {
 	emulate -L zsh
-	autoload zrecompile
-	echo updating zsh-config
-	cp ~/bah/configs/zshrc ~/.zshrc_ && mv ~/.zshrc_ ~/.zshrc && echo zshrc updated.
-	cp ~/bah/configs/zprofile ~/.zprofile_ && mv ~/.zprofile_ ~/.zprofile && echo zprofile updated.
-	rm ~/.zcompdump.* 2> /dev/null && echo removed old .zcompdump
-	zrecompile .zprofile
-	zrecompile .zshrc
-	zrecompile .zprofile.local
-	zrecompile .zshrc.local
+
+	if [[ x"$1" = x"" ]]; then
+		BAH_PATH="${HOME}/bah/"
+	else
+		BAH_PATH=$1
+	fi
+	echo "  "BAH_PATH=${BAH_PATH}
+
+	echo "  "Syncing bah-repo.
+	svn up ${BAH_PATH}
+	SVN_REV=$(svn info ${BAH_PATH}|grep Revision|cut -d' ' -f2)
+	echo "  "SVN_REV=${SVN_REV}
+	echo "  "Updating zsh-config.
+	sed -e "s/^# zsh_svn$/# zsh_svn-r${SVN_REV}/" ${BAH_PATH}/configs/zshrc > ~/.zshrc_ && \
+		mv ~/.zshrc_ ~/.zshrc && echo .zshrc updated.
+	sed -e "s/^# zsh_svn$/# zsh_svn-r${SVN_REV}/" ${BAH_PATH}/configs/zprofile > ~/.zprofile_ && \
+		mv ~/.zprofile_ ~/.zprofile && echo .zprofile updated.
+	rm ~/.zcompdump.* 2> /dev/null && echo removed old .zcompdump.
+	echo "  "Recompiling configs.
+	zcompile ~/.zprofile
+	zcompile ~/.zshrc
+	zcompile ~/.zprofile.local
+	zcompile ~/.zshrc.local
 }
 
 precmd() {
