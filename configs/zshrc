@@ -29,16 +29,16 @@ bindkey '^y' yank
 bindkey '^t' delete-word
 bindkey '^x' copy-prev-shell-word
 bindkey '^z' vi-undo-change
-bindkey "\e[A" up-line-or-history		# up
-bindkey "\e[B" down-line-or-history		# down
-bindkey "\e[C" vi-forward-char			# right
-bindkey "\e[D" vi-backward-char			# left
-bindkey "\e[1~" shell-backward-word		# home
-bindkey "\e[2~" quoted-insert			# insert
-bindkey "\e[3~" delete-char				# delete
-bindkey "\e[4~" shell-forward-word		# end
-bindkey "\e[5~" history-search-backward	# pgup
-bindkey "\e[6~" history-search-forward	# pgdn
+bindkey "\e[A" history-beginning-search-backward # up
+bindkey "\e[B" history-beginning-search-forward  # down
+bindkey "\e[C" vi-forward-char                   # right
+bindkey "\e[D" vi-backward-char                  # left
+bindkey "\e[1~" shell-backward-word              # home
+bindkey "\e[2~" quoted-insert                    # insert
+bindkey "\e[3~" delete-char                      # delete
+bindkey "\e[4~" shell-forward-word               # end
+bindkey "\e[5~" history-search-backward          # pgup
+bindkey "\e[6~" history-search-forward           # pgdn
 #bindkey "\e[7~" beginning-of-line
 #bindkey "\e[8~" end-of-line
 #bindkey "\e[H" beginning-of-line
@@ -56,65 +56,17 @@ alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.UTF-8 mutt'
 alias gate="ssh -A gate.ladan.se -t"
 alias webs='python -m SimpleHTTPServer'
 
-update-cert() {
-	emulate -L zsh
-	if [[ -f ~/.svncert ]] ; then
-		echo already got sslcert
-		exit 0
-	fi
-	echo getting rootcert for svn
-	get https://svn.ladan.se/bah/Equifax_Secure_Global_eBusiness_CA-1.pem nosslcheck > ~/.svncert
-	get https://svn.ladan.se/bah/Equifax_Secure_Global_eBusiness_CA-1.pem rapidssl > /dev/null
-	if [[ $? != 0 ]];then
-		rm ~/.svncert
-		echo error validating cert
-	else
-		echo got cert
-	fi
-}
-
 update-zsh() {
 	emulate -L zsh
+	autoload zrecompile
 	echo updating zsh-config
-	get https://svn.ladan.se/bah/configs/zshrc rapidssl >~/.zshrc_ && mv ~/.zshrc_ ~/.zshrc && echo zshrc updated.
-	get https://svn.ladan.se/bah/configs/zprofile rapidssl >~/.zprofile_ && mv ~/.zprofile_ ~/.zprofile && echo zprofile updated.
-	rm ~/.zcompdump.* 2> /dev/null
-}
-
-update-conf() {
-	emulate -L zsh
-	if [[ x${1} != x"" ]] ;then
-		echo updating ${1}-config
-		if [[ ${1} == "ssh" ]] ;then
-			mkdir -p ~/.ssh
-			get https://svn.ladan.se/bah/configs/ssh_config rapidssl >~/.ssh/config_ && mv ~/.ssh/config_ ~/.ssh/config && echo ssh/config updated.
-			get https://svn.ladan.se/bah/configs/ssh_authorized_keys rapidssl >~/.ssh/authorized_keys_ && mv ~/.ssh/authorized_keys_ ~/.ssh/authorized_keys && echo ssh/authorized_keys updated.
-		elif [[ ${1} == "mutt" ]] ;then
-			file=muttrc
-			get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
-		elif [[ ${1} == "screen" ]] ;then
-			file=screenrc
-			get https://svn.ladan.se/bah/configs/${file} rapidssl >~/.${file}_ && mv ~/.${file}_ ~/.${file} && echo ${file} updated.
-		fi
-	else
-		echo missing argument
-		echo Usage: update-conf application
-	fi
-}
-
-get() {
-	emulate -L zsh
-	if which curl >/dev/null; then
-		if [[ -z $2 ]];then
-			curl -4 "$1"
-		elif [[ x$2 == "xnosslcheck" ]];then
-			curl -4 -k "$1"
-		elif [[ x$2 == "xrapidssl" ]];then
-			curl -4 --cacert ~/.svncert "$1"
-		fi
-	else
-		return 2
-	fi
+	cp ~/bah/configs/zshrc ~/.zshrc_ && mv ~/.zshrc_ ~/.zshrc && echo zshrc updated.
+	cp ~/bah/configs/zprofile ~/.zprofile_ && mv ~/.zprofile_ ~/.zprofile && echo zprofile updated.
+	rm ~/.zcompdump.* 2> /dev/null && echo removed old .zcompdump
+	zrecompile .zprofile
+	zrecompile .zshrc
+	zrecompile .zprofile.local
+	zrecompile .zshrc.local
 }
 
 precmd() {
@@ -168,9 +120,6 @@ bindkey '^w' shell-backward-kill-word
 
 if [ "$HAVE_RUN_ZPROFILE" != "Y" ]; then
   . ~/.zprofile
-fi
-if [[ -f ~/.zshrc.user ]]; then
-  . ~/.zshrc.user
 fi
 if [[ -f ~/.zshrc.local ]]; then
   . ~/.zshrc.local

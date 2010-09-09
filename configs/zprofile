@@ -22,6 +22,9 @@ if [[ -d ~/bin ]] ; then
 		if [[ -d ~/man ]] ; then
 				MANPATH="${HOME}/man:${MANPATH}"
 		fi
+		if [[ -d ~/share/man ]] ; then
+				MANPATH="${HOME}/share/man:${MANPATH}"
+		fi
 fi
 if [[ -d /opt/local/bin ]] ; then
 		PATH="/opt/local/bin:${PATH}"
@@ -31,9 +34,6 @@ if [[ -d /opt/local/bin ]] ; then
 		if [[ -d /opt/local/man ]] ; then
 				MANPATH="/opt/local/man:${MANPATH}"
 		fi
-fi
-if [[ -d /Library/Frameworks/Python.framework/Versions/Current/bin ]] ; then
-		PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:${PATH}"
 fi
 
 RPROMPT=$'%{\e[31m%}%# %{\e[m%}%{\e[33;1m%}%D{%a %d %b %G}%{\e[m%} %0(?:%{\e[32;1m%}:%{\e[31m%})[%?]%{\e[m%}'
