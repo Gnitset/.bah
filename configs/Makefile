@@ -16,7 +16,7 @@ config_zsh:
 	install -bC -m 0644 zshrc ~/.zshrc
 	install -bC -m 0644 zprofile ~/.zprofile
 	rm ~/.zcompdump* 2> /dev/null || exit 0
-#	zsh -c 'autoload zrecompile; zrecompile .zshrc'
-#	zsh -c 'autoload zrecompile; zrecompile .zprofile'
-#	zsh -c 'autoload zrecompile; zrecompile .zshrc.local'
-#	zsh -c 'autoload zrecompile; zrecompile .zprofile.local'
+	zsh -c 'zcompile ~/.zshrc'
+	zsh -c 'zcompile ~/.zprofile'
+	zsh -c 'zcompile ~/.zshrc.local'
+	zsh -c 'zcompile ~/.zprofile.local'
