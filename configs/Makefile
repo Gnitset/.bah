@@ -1,22 +1,27 @@
+all:
+	@echo possible targets config_ssh config_screen config_mutt config_vim config_zsh and install_all
+
+install_all: config_ssh config_screen config_mutt config_vim config_zsh
+
 config_ssh:
-	install -d -m 0755 ~/.ssh
-	install -bC -m 0644 ssh_config ~/.ssh/config
-	install -bC -m 0644 ssh_authorized_keys ~/.ssh/authorized_keys
+	install -d -m 0755 ${HOME}/.ssh
+	install -b -m 0644 ssh_config ${HOME}/.ssh/config
+	install -b -m 0644 ssh_authorized_keys ${HOME}/.ssh/authorized_keys
 
 config_screen:
-	install -bC -m 0644 screenrc ~/.screenrc
+	install -b -m 0644 screenrc ${HOME}/.screenrc
 
 config_mutt:
-	install -bC -m 0640 muttrc ~/.muttrc
+	install -b -m 0640 muttrc ${HOME}/.muttrc
 
 config_vim:
-	install -bC -m 0644 vimrc ~/.vimrc
+	install -b -m 0644 vimrc ${HOME}/.vimrc
 
 config_zsh:
-	install -bC -m 0644 zshrc ~/.zshrc
-	install -bC -m 0644 zprofile ~/.zprofile
-	rm ~/.zcompdump* 2> /dev/null || exit 0
-	zsh -c 'zcompile ~/.zshrc'
-	zsh -c 'zcompile ~/.zprofile'
-	zsh -c 'zcompile ~/.zshrc.local'
-	zsh -c 'zcompile ~/.zprofile.local'
+	install -b -m 0644 zshrc ${HOME}/.zshrc
+	install -b -m 0644 zprofile ${HOME}/.zprofile
+	rm ${HOME}/.zcompdump* 2> /dev/null || exit 0
+	zsh -c 'zcompile ${HOME}/.zshrc' 2> /dev/null || exit 0
+	zsh -c 'zcompile ${HOME}/.zprofile' 2> /dev/null || exit 0
+	zsh -c 'zcompile ${HOME}/.zshrc.local' 2> /dev/null || exit 0
+	zsh -c 'zcompile ${HOME}/.zprofile.local' 2> /dev/null || exit 0
