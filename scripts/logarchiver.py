@@ -27,7 +27,7 @@ def archive(filename, archivepath):
 		os.mkdir(os.path.join(head, archivepath))
 
 	gzfile=gzip.GzipFile(target, "wb", 6)
-	gzfile.write(open(filename).read())
+	gzfile.writelines(open(filename))
 	os.fsync(gzfile.fileno())
 	gzfile.close()
 
@@ -57,7 +57,7 @@ def file_opened(path):
 
 def p_split(path):
 	head, tail=os.path.split(path)
-	if head:
+	if head and head!=path:
 		return p_split(head)+[tail]
 	else:
 		return [tail]
@@ -78,12 +78,13 @@ def walk(path, maxdepth=0, archivedir="archive"):
 	for root, dirs, files in os.walk(path):
 		psplit=p_split(root)
 		depth=len(psplit)
-		files=map(f_age, filter(os.path.isfile, [os.path.join(root,f) for f in files if not file_opened(f)]))
+		files=[f_age(path) for path in [os.path.join(root,f) for f in files]
+					if os.path.isfile(path) and not file_opened(path)]
 		if psplit[-1] == archivedir:
 			archive.extend(files)
 		else:
 			logs.extend([f for f in files if not f[0].endswith("log") and not f[0].endswith(".gz")])
-		if depth >= maxdepth and maxdepth:
+		if maxdepth and depth >= maxdepth:
 			del dirs[:]
 	return (logs, archive)
 
@@ -107,7 +108,7 @@ if __name__ == "__main__":
 			sys.exit(3)
 
 	logs, archives=walk(opts.logspath, 0, opts.archivedir)
-	logfiles=filter(lambda x: x[1]>=opts.mindays, logs)
+	logfiles=[log for log in logs if log[1]>=opts.mindays]
 	archivedfiles=filter(lambda x: x[1]>=opts.maxdays, archives)
 
 	if opts.verbose: print "files to compress", len(logfiles)
