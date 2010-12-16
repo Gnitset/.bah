@@ -42,7 +42,7 @@ def archive(filename, archivepath):
 def file_opened(path):
 	if not os.path.isdir("/proc"):
 		return False
-	path=os.path.realpath(os.path.normpath(path))
+	path=os.path.realpath(os.path.normpath(os.path.join(os.getcwd(),path)))
 	for p in os.listdir("/proc/"):
 		if not p.isdigit(): continue
 		d = "/proc/%s/fd/" % p
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 	opts, rest=parser.parse_args(sys.argv[1:])
 
 	if opts.verbose:
-		print "log_root=%s\narchive_name=%s\nmindays=%s\nmaxdays=%s\nDryRun=%s\n"%(opts.logspath, opts.archivedir, opts.maxdays, opts.mindays, opts.dryrun)
+		print "logs-path=%s\narchive-dir=%s\nmin-days=%s\nmax-days=%s\ndry-run=%s\n"%(opts.logspath, opts.archivedir, opts.maxdays, opts.mindays, opts.dryrun)
 	if not opts.force:
 		print "OK? [y/N]"
 		inp=sys.stdin.readline()
