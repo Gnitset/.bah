@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
+#
+# Author: Klas Meder Boqvist <klas.meder.boqvist@bwin.org>
+# Last Update: 2010-12-16
+# Mission: Archive logfiles that is rolled by applications
+# Recomended default flags: -fq
 
 import os
 import sys
