@@ -11,6 +11,8 @@ import sys
 import gzip
 import datetime
 import optparse
+import re
+from sre_constants import error as re_error
 
 class ArchiveException:
 	def __init__(self, msg, file):
@@ -102,6 +104,7 @@ if __name__ == "__main__":
 	parser.add_option("-n", "--dry-run", dest="dryrun", default=False, action="store_true", help="dont move or touch anything")
 	parser.add_option("-f", "--force", dest="force", default=False, action="store_true", help="disables questions")
 	parser.add_option("-q", "--quiet", dest="verbose", default=True, action="store_false", help="disables output")
+	parser.add_option("-r", "--regexp", dest="regexp", default=None, help="only touch files matching regexp")
 	opts, rest=parser.parse_args(sys.argv[1:])
 
 	if opts.verbose:
@@ -113,8 +116,21 @@ if __name__ == "__main__":
 			sys.exit(3)
 
 	logs, archives=walk(opts.logspath, 0, opts.archivedir)
-	logfiles=[log for log in logs if log[1]>=opts.mindays]
-	archivedfiles=filter(lambda x: x[1]>=opts.maxdays, archives)
+
+	if opts.regexp:
+		try:
+			r=re.compile(opts.regexp)
+			logfiles=[log for log in logs if log[1]>=opts.mindays and r.match(log[0].split("/")[-1])]
+			archivedfiles=[log for log in archives if log[1]>=opts.maxdays and r.match(log[0].split("/")[-1])]
+		except Exception, e:
+			if isinstance(e, re_error):
+				print "invalid regexp: %s"%opts.regexp
+				sys.exit(5)
+			else:
+				raise
+	else:
+		logfiles=[log for log in logs if log[1]>=opts.mindays]
+		archivedfiles=[log for log in archives if log[1]>=opts.maxdays]
 
 	if opts.verbose: print "files to compress", len(logfiles)
 	if opts.verbose: print "files to remove", len(archivedfiles)
