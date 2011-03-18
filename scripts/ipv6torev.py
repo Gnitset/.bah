@@ -4,7 +4,7 @@ from sys import argv
 
 for ip in argv[1:]:
 	groups=ip.split(":")
-	missing0=6-len(groups)
+	missing0=8-len(groups)
 	ipv6=[]
 
 	for group in groups:
