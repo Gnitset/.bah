@@ -11,6 +11,7 @@ setopt INTERACTIVE_COMMENTS
 setopt APPEND_HISTORY
 setopt HIST_IGNORE_DUPS
 setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
 setopt SHARE_HISTORY
 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}'
@@ -51,9 +52,7 @@ bindkey "\e[6~" history-beginning-search-forward  # pgdn
 alias py=python
 alias find='noglob find'
 alias woi='ssh wijk -t screen -UDr'
-alias soi='ssh soija -t screen -UDr'
 alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.UTF-8 mutt'
-alias gate="ssh -A gate.ladan.se -t"
 alias webs='python -m SimpleHTTPServer'
 
 update-zsh() {

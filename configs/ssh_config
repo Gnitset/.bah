@@ -1,10 +1,15 @@
 Host *
 User gnitset
 HashKnownHosts yes
+ForwardAgent yes
 
 Host wijk
 HostName wijk.oijk.net
 DynamicForward 12345
+LocalForward 2525 localhost:25
 
 Host bruse
 HostName bruse.proxxi.org
+
+Host gate
+HostName gate.ladan.se
