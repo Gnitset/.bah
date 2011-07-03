@@ -80,7 +80,7 @@ static void build_spamc_argv(char **options) {
  * doesn't include the LF and returns the number of characters put into the
  * buffer.
  */
-static int getline(char *buf, int len, FILE *fh) {
+static int better_fgets(char *buf, int len, FILE *fh) {
 	char *p = buf;
 	while (42) {
 		int c = getc(fh);
@@ -125,7 +125,7 @@ static char *addr2user(const char *addr) {
 	if (!domain) domain = addr;
 	list = fopen("/var/qmail/users/spam", "r");
 	if (!list) return NULL;
-	while ((len = getline(buf, sizeof(buf), list))) {
+	while ((len = better_fgets(buf, sizeof(buf), list))) {
 		char *sep = strchr(buf, ':');
 		if (buf[0] == '#' || !sep) continue;
 		*sep++ = '\0';
@@ -179,7 +179,7 @@ static void check_list(const char *addr) {
 	if (!adomain || !alocallen) return;
 	list = fopen("/var/qmail/users/lists", "r");
 	if (!list) return;
-	while ((len = getline(buf, sizeof(buf), list))) {
+	while ((len = better_fgets(buf, sizeof(buf), list))) {
 		char *dir = strchr(buf, ':');
 		if (buf[0] == '#' || !dir) continue;
 		*dir++ = '\0';
@@ -341,7 +341,7 @@ static void write_header(const char *fmt, const char *reason, int extra_fields) 
 
 		*hostname = '\0';
 		if ((me = fopen("/var/qmail/control/me", "r"))) {
-			len = getline(hostname, sizeof(hostname), me);
+			len = better_fgets(hostname, sizeof(hostname), me);
 			fclose(me);
 		}
 		if (!*hostname) strcpy(hostname, "UNKNOWN");
