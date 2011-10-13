@@ -462,6 +462,7 @@ sub open_window {
     # Hide the command from any shell history
     $cmd = 'history -d $(($HISTCMD-1)) && '.$cmd if get_shell =~ m{/(ba)?sh$};
     # TODO - (t)csh, ksh, zsh 
+    $cmd = ' '.$cmd if get_shell =~ m{/zsh$};
 
     my $tabobj = $terminal->doScript_in_($cmd, undef) || return;
 
