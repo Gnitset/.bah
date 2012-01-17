@@ -1,0 +1,41 @@
+# generate root ca:
+openssl req -days 7300 -new -newkey rsa:2048 -sha1 -x509 -keyout CA/ROOT/ca.key -out CA/ROOT/ca.crt -config openssl.cfg
+# Ongame Service Operations Root CA
+
+# create files needed for ca:
+touch CA/ROOT/index.txt
+echo 01 > CA/ROOT/serial
+
+# generate intermediate ca csr:
+openssl req -days 2920 -extensions v3_req_intermediate -new -newkey rsa:2048 -sha1 -keyout CA/SE/ca.key -out CA/SE/ca.csr -config openssl.cfg
+# Ongame Service Operations SE CA
+
+# sign the intermediate ca:
+openssl ca -config openssl.cfg -name CA_Root -in CA/SE/ca.csr -out CA/SE/ca.crt -cert CA/ROOT/ca.crt -keyfile CA/ROOT/ca.key 
+
+# create files needed for intermedie ca:
+touch CA/SE/index.txt
+echo 01 > CA/SE/serial
+
+# create folder to store certs:
+mkdir -p certs/SE
+
+# generate csr fo server cert:
+openssl req -new -newkey rsa:2048 -sha1 -keyout certs/SE/svn.ongame.com.key -out certs/SE/svn.ongame.com.csr -config openssl.cfg
+
+# sign the cert under the intermediate ca:
+openssl ca -config openssl.cfg -name CA_Intermediate -in certs/SE/svn.ongame.com.csr -out certs/SE/svn.ongame.com.crt -cert CA/SE/ca.crt -keyfile CA/SE/ca.key
+
+# test the ca:
+openssl s_server -accept 8080 -cert certs/SE/svn.ongame.com.crt -key certs/SE/svn.ongame.com.key -CAfile CA/SE/ca.crt -www
+echo 127.0.0.1 svn.ongame.com >> /etc/hosts
+curl --cacert CA/ROOT/ca.crt https://svn.ongame.com:8080/
+
+# look in a csr:
+openssl req -text -noout -in certs/SE/svn.ongame.com.csr
+
+# revoke a cert:
+openssl ca -revoke certs/SE/svn.ongame.com.crt -config openssl.cfg
+
+# generate new crl:
+openssl ca -gencrl -out CA/SE/ca.crl -config openssl.cfg
