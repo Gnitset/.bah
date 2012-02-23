@@ -76,10 +76,10 @@ update-zsh() {
 		mv ~/.zprofile_ ~/.zprofile && echo .zprofile updated.
 	rm ~/.zcompdump.* 2> /dev/null && echo removed old .zcompdump.
 	echo "  "Recompiling configs.
-	zcompile ~/.zprofile
-	zcompile ~/.zshrc
-	zcompile ~/.zprofile.local
-	zcompile ~/.zshrc.local
+	zcompile ~/.zprofile 2> /dev/null
+	zcompile ~/.zshrc 2> /dev/null
+	zcompile ~/.zprofile.local 2> /dev/null
+	zcompile ~/.zshrc.local 2> /dev/null
 }
 
 precmd() {
