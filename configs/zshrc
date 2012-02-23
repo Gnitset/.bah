@@ -1,5 +1,5 @@
 # ~/.zshrc
-# zsh_svn
+# $Id$
 
 setopt NO_PROMPT_CR
 setopt NO_BEEP
