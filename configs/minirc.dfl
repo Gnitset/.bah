@@ -1,0 +1,18 @@
+pu port             /dev/ttyS0
+pu baudrate         9600
+pu minit            
+pu mreset           
+pu mdialpre         
+pu mdialsuf         
+pu mdialpre2        
+pu mdialsuf2        
+pu mdialpre3        
+pu mdialsuf3        
+pu mconnect         
+pu mnocon1          
+pu mnocon2          
+pu mnocon3          
+pu mnocon4          
+pu mhangup          
+pu mdialcan         
+pu rtscts           No
