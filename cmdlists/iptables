@@ -1,0 +1,2 @@
+# get counter and zero them
+iptables -nvxL -Z
