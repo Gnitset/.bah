@@ -1,5 +1,6 @@
 Host *
 	User gnitset
+	Port 222
 	HashKnownHosts yes
 	ForwardAgent yes
 	ControlMaster auto
