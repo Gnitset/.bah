@@ -128,6 +128,8 @@ zle -N shell-backward-word
 zle -N shell-forward-word
 zle -N shell-backward-kill-word
 bindkey '^w' shell-backward-kill-word
+bindkey '\e[5D' shell-backward-word
+bindkey '\e[5C' shell-forward-word
 
 if [ "$HAVE_RUN_ZPROFILE" != "Y" ]; then
   . ~/.zprofile
