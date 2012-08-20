@@ -1,11 +1,3 @@
-Host *
-	User gnitset
-	Port 222
-	HashKnownHosts yes
-	ForwardAgent yes
-	ControlMaster auto
-	ControlPath ~/.ssh/master-%r@%h:%p
-
 Host wijk
 	HostName wijk.oijk.net
 	DynamicForward 12345
@@ -13,10 +5,19 @@ Host wijk
 
 Host bruse
 	HostName bruse.proxxi.org
+	Port 22
 
 Host gate
 	HostName gate.ladan.se
 	DynamicForward 1080
 
-Host *.ladan.se
-	ProxyCommand connect -R remote -S localhost:1080 `echo %h|sed -e 's/\.sth$//'` %p
+#Host *.ladan.se
+#	ProxyCommand connect -R remote -S localhost:1080 %h %p
+
+Host *
+	User gnitset
+	Port 222
+	HashKnownHosts yes
+	ForwardAgent yes
+	ControlMaster auto
+	ControlPath ~/.ssh/master-%r@%h:%p
