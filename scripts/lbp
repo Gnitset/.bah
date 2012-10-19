@@ -1,0 +1,29 @@
+#! /usr/bin/env bash
+# vim: set fileencoding=utf-8 :
+#
+# Author: Klas Meder Boqvist <klas.meder.boqvist@redbet.com>
+# Last Update: 2012-10-19
+# Mission: Nice shutdown of node from loadbalancer
+# 
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+IP="$1"
+PORT="$2"
+MODE="$3"
+
+if [[ -z "$MODE" ]] ; then
+	echo 'args; <s-ip> <d-port> <block|open>'
+	exit 1
+fi
+
+if [[ "$MODE" == "open" ]] ; then
+	iptables --delete INPUT -s "$IP" -p tcp --dport "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
+fi
+
+if [[ "$MODE" == "block" ]] ; then
+	iptables --insert INPUT -s "$IP" -p tcp --dport "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
+	while [[ $( netstat -tn | sed -n "/:$PORT *$IP/p" | wc -l ) -gt "0" ]] ; do
+		netstat -tn | sed -n "1p;2p;/:$PORT *$IP/p"
+	done
+fi
