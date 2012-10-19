@@ -13,17 +13,17 @@ PORT="$2"
 MODE="$3"
 
 if [[ -z "$MODE" ]] ; then
-	echo 'args; <s-ip> <d-port> <block|open>'
+	echo 'usage: <source-ip[/nn]> <destination-port(s)> <block|open>'
 	exit 1
 fi
 
 if [[ "$MODE" == "open" ]] ; then
-	while iptables --delete INPUT -s "$IP" -p tcp --dport "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable 2> /dev/null ;do true ;done
+	while iptables --delete INPUT -s "$IP" -p tcp -m multiport --dports "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable 2> /dev/null ;do true ;done
 	echo "$IP can now access port $PORT again"
 fi
 
 if [[ "$MODE" == "block" ]] ; then
-	iptables --insert INPUT -s "$IP" -p tcp --dport "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
+	iptables --insert INPUT -s "$IP" -p tcp -m multiport --dports "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
 	while [[ $( netstat -tn | sed -n "/:$PORT *$IP/p" | wc -l ) -gt "0" ]] ; do
 		netstat -tn | sed -n "1p;2p;/:$PORT *$IP/p"
 		sleep 5
