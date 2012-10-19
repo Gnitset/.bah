@@ -25,5 +25,6 @@ if [[ "$MODE" == "block" ]] ; then
 	iptables --insert INPUT -s "$IP" -p tcp --dport "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
 	while [[ $( netstat -tn | sed -n "/:$PORT *$IP/p" | wc -l ) -gt "0" ]] ; do
 		netstat -tn | sed -n "1p;2p;/:$PORT *$IP/p"
+		sleep 5
 	done
 fi
