@@ -1,5 +1,4 @@
 #! /usr/bin/env bash
-# vim: set fileencoding=utf-8 :
 #
 # Author: Klas Meder Boqvist <klas.meder.boqvist@redbet.com>
 # Last Update: 2012-10-19
@@ -17,16 +16,16 @@ if [[ -z "$MODE" ]] ; then
 	exit 1
 fi
 
-if [[ "$MODE" == "open" ]] ; then
+if [[ "$MODE" = "open" ]] ; then
 	while iptables --delete INPUT -s "$IP" -p tcp -m multiport --dports "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable 2> /dev/null ;do true ;done
 	echo "$IP can now access port $PORT again"
 fi
 
-if [[ "$MODE" == "block" ]] ; then
+if [[ "$MODE" = "block" ]] ; then
 	iptables --insert INPUT -s "$IP" -p tcp -m multiport --dports "$PORT" -m state --state NEW -j REJECT --reject-with icmp-port-unreachable
-	while [[ $( netstat -tn | sed -n "/:$PORT *$IP/p" | wc -l ) -gt "0" ]] ; do
+	echo "$IP is now blocked from accessing port $PORT"
+	while [[ $( netstat -tn | sed -n "/:$PORT *$IP/p" | wc -l ) -gt 0 ]] ; do
 		netstat -tn | sed -n "1p;2p;/:$PORT *$IP/p"
 		sleep 5
 	done
-	echo "$IP is now blocked from accessing port $PORT"
 fi
