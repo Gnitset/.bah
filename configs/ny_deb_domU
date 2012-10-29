@@ -1,0 +1,32 @@
+#!/bin/sed s/TEMPLATE/opstest/g
+sudo lvcreate -L 3072M -v -nTEMPLATE_slash xen1
+sudo lvcreate -L 512M -v -nTEMPLATE_swap xen1
+sudo mke2fs -j -i 4096 -L TEMPLATE_slash /dev/mapper/xen1-TEMPLATE_slash
+sudo mkswap -f /dev/mapper/xen1-TEMPLATE_swap
+sudo mount /dev/mapper/xen1-TEMPLATE_slash /mnt/target
+sudo debootstrap squeeze /mnt/target/ http://ftp.fi.debian.org/debian
+sudo vim /mnt/target/etc/inittab
+echo -e '/dev/xvda1\t/\text3\tdefaults\t0 1\n/dev/xvda2\tnone\tswap\tdefaults\t0 0' |sudo tee /mnt/target/etc/fstab
+sudo cp /etc/resolv.conf /mnt/target/etc
+echo -e 'deb http://ftp.se.debian.org/debian/ squeeze main\ndeb-src http://ftp.se.debian.org/debian/ squeeze main\ndeb http://ftp.fi.debian.org/debian/ squeeze main\ndeb-src http://ftp.fi.debian.org/debian/ squeeze main\n\ndeb http://ftp.se.debian.org/debian/ squeeze-updates main\ndeb-src http://ftp.se.debian.org/debian/ squeeze-updates main\ndeb http://ftp.fi.debian.org/debian/ squeeze-updates main\ndeb-src http://ftp.fi.debian.org/debian/ squeeze-updates main\n\ndeb http://security.debian.org/ squeeze/updates main\ndeb-src http://security.debian.org/ squeeze/updates main' |sudo tee /mnt/target/etc/apt/sources.list
+echo -e 'auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet static\n\taddress 1.1.1.1\n\tnetmask 255.255.255.0\n\tgateway 255.255.255.255' |sudo tee /mnt/target/etc/network/interfaces
+echo -e '1.1.1.1\tTEMPLATE.DOMAIN' | sudo tee /mnt/target/etc/hosts
+echo -e 'TEMPLATE.DOMAIN' | sudo tee /mnt/target/etc/hostname
+sudo chroot /mnt/target /bin/bash
+    aptitude -u # and then set aptitude prefs
+    aptitude install openssh-server openssh-client less bzip2 zsh vim vim-nox make subversion strace screen lsb-release sudo munin-node ntp locales
+    dpkg-reconfigure locales
+    update-alternatives --set editor /usr/bin/vim.nox
+    for Z in munin-node ssh ntp;do /etc/init.d/$Z stop ;done
+    passwd
+    adduser gnitset -u 1024
+    gpasswd -a gnitset sudo
+    gpasswd -a gnitset adm
+    # reconfigure sshd
+    su - gnitset
+      svn co https://vc.ladan.se/svn/bah
+      ( cd bah/configs; make install )
+      chsh gnitset -s /bin/zsh
+sed s/template/TEMPLATE/g /etc/xen/template.vm |sudo tee /etc/xen/TEMPLATE.vm
+sudo umount /mnt/target
+sudo xm create /etc/xen/TEMPLATE.vm -c
