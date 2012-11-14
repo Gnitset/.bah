@@ -1,11 +1,11 @@
-#!/bin/sed s/TEMPLATE/opstest/g
+#!/bin/sed s/TEMPLATE/new-system/g
 sudo lvcreate -L 3072M -v -nTEMPLATE_slash xen1
 sudo lvcreate -L 512M -v -nTEMPLATE_swap xen1
 sudo mke2fs -j -i 4096 -L TEMPLATE_slash /dev/mapper/xen1-TEMPLATE_slash
 sudo mkswap -f /dev/mapper/xen1-TEMPLATE_swap
 sudo mount /dev/mapper/xen1-TEMPLATE_slash /mnt/target
 sudo debootstrap squeeze /mnt/target/ http://ftp.fi.debian.org/debian
-sudo vim /mnt/target/etc/inittab
+sudo vim /mnt/target/etc/inittab # add getty for hvc0 and remove for tty[2-6]
 echo -e '/dev/xvda1\t/\text3\tdefaults\t0 1\n/dev/xvda2\tnone\tswap\tdefaults\t0 0' |sudo tee /mnt/target/etc/fstab
 sudo cp /etc/resolv.conf /mnt/target/etc
 echo -e 'deb http://ftp.se.debian.org/debian/ squeeze main\ndeb-src http://ftp.se.debian.org/debian/ squeeze main\ndeb http://ftp.fi.debian.org/debian/ squeeze main\ndeb-src http://ftp.fi.debian.org/debian/ squeeze main\n\ndeb http://ftp.se.debian.org/debian/ squeeze-updates main\ndeb-src http://ftp.se.debian.org/debian/ squeeze-updates main\ndeb http://ftp.fi.debian.org/debian/ squeeze-updates main\ndeb-src http://ftp.fi.debian.org/debian/ squeeze-updates main\n\ndeb http://security.debian.org/ squeeze/updates main\ndeb-src http://security.debian.org/ squeeze/updates main' |sudo tee /mnt/target/etc/apt/sources.list
@@ -13,7 +13,7 @@ echo -e 'auto lo\niface lo inet loopback\n\nauto eth0\niface eth0 inet static\n\
 echo -e '1.1.1.1\tTEMPLATE.DOMAIN' | sudo tee /mnt/target/etc/hosts
 echo -e 'TEMPLATE.DOMAIN' | sudo tee /mnt/target/etc/hostname
 sudo chroot /mnt/target /bin/bash
-    aptitude -u # and then set aptitude prefs
+    aptitude -u # and then set aptitude prefs (^T Options->Preferences disable "Install recommended packages automatically")
     aptitude install openssh-server openssh-client less bzip2 zsh vim vim-nox make subversion strace screen lsb-release sudo munin-node ntp locales
     dpkg-reconfigure locales
     update-alternatives --set editor /usr/bin/vim.nox
@@ -22,11 +22,11 @@ sudo chroot /mnt/target /bin/bash
     adduser gnitset -u 1024
     gpasswd -a gnitset sudo
     gpasswd -a gnitset adm
-    # reconfigure sshd
+    # reconfigure sshd (disable root login and change port to 222)
+    chsh gnitset -s /bin/zsh
     su - gnitset
       svn co https://vc.ladan.se/svn/bah
       ( cd bah/configs; make install )
-      chsh gnitset -s /bin/zsh
 sed s/template/TEMPLATE/g /etc/xen/template.vm |sudo tee /etc/xen/TEMPLATE.vm
 sudo umount /mnt/target
 sudo xm create /etc/xen/TEMPLATE.vm -c
