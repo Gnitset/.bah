@@ -47,3 +47,5 @@ function ToggleHex()
   let &readonly=l:oldreadonly
   let &modifiable=l:oldmodifiable
 endfunction
+
+command W :execute ':silent w !sudo tee % > /dev/null' | :edit!
