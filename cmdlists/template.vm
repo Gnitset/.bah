@@ -1,8 +1,8 @@
-kernel = "/boot/vmlinuz-2.6.32-5-xen-686"
-ramdisk = "/boot/initrd.img-2.6.32-5-xen-686"
+kernel = "/boot/vmlinuz-3.2.0-4-amd64"
+ramdisk = "/boot/initrd.img-3.2.0-4-amd64"
 memory = 128
 name = "template"
-disk = [ 'phy:/dev/mapper/xen1-template_slash,xvda1,w', 'phy:/dev/mapper/xen1-template_swap,xvda2,w' ]
+disk = [ 'phy:/dev/mapper/xenvg-template_slash,xvda1,w', 'phy:/dev/mapper/xenvg-template_swap,xvda2,w' ]
 root = "/dev/xvda1"
 
 #vif = [ "mac=00:16:3e:06:36:2f,bridge=br0" ]
