@@ -4,7 +4,7 @@ sudo lvcreate -L 512M -v -nTEMPLATE_swap vg
 sudo mke2fs -j -i 4096 -L TEMPLATE_slash /dev/mapper/vg-TEMPLATE_slash
 sudo mkswap -f /dev/mapper/vg-TEMPLATE_swap
 sudo mount /dev/mapper/vg-TEMPLATE_slash /mnt/target
-sudo debootstrap wheezy /mnt/target/ http://ftp.fi.debian.org/debian
+sudo debootstrap --exclude=rsyslog --include=openssh-server,openssh-client,less,bzip2,zsh,vim,vim-nox,make,subversion,strace,screen,lsb-release,sudo,ntp,locales,ca-certificates,bash-completion,bind9-host,bsd-mailx,curl,git,rsync,syslog-ng,postfix wheezy /mnt/target/ http://ftp.fi.debian.org/debian
 sudo vim /mnt/target/etc/inittab # add getty for hvc0 and remove for tty[2-6]
 echo -e '/dev/xvda1\t/\text3\tdefaults\t0 1\n/dev/xvda2\tnone\tswap\tdefaults\t0 0' |sudo tee /mnt/target/etc/fstab
 sudo cp /etc/resolv.conf /mnt/target/etc
