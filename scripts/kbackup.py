@@ -16,7 +16,7 @@ root="/backup/data"
 lockfile=".kbackup.lock"
 sources={}
 
-sources["host.domain.tld"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe" }"""
+sources["host.domain.tld"]={ "interval": "h", "keep": 30, "user": "backup", "password": "ChangeMe", "map-uid": True }"""
 	sys.exit(1)
 
 if "--force" in sys.argv:
@@ -167,7 +167,10 @@ class KBackup():
 		if self.debug:
 			print "running rsync on host", self.host
 		try:
-			ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+			if self.conf['map-uid']:
+				ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+			else:
+				ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
 		except:
 			ret_val=1
 
