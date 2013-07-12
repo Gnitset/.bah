@@ -170,7 +170,7 @@ class KBackup():
 			if self.conf['map-uid']:
 				ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--numeric-ids", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
 			else:
-				ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "--archive", "--delete", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
+				ret_val=os.spawnvpe(os.P_WAIT, "rsync", ["rsync", "-rlptD", "--delete", "--hard-links", "--sparse", "--link-dest="+current, self.host+"::backup/", new], { "USER": self.user, "RSYNC_PASSWORD": self.password } )
 		except:
 			ret_val=1
 
