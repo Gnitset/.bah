@@ -54,6 +54,7 @@ alias find='noglob find'
 alias woi='ssh wijk -t screen -UDr'
 alias mutto='ssh mail.oijk.net -t env LC_ALL=en_US.UTF-8 mutt'
 alias webs='python -m SimpleHTTPServer'
+alias ts="date '+%FT%T.%N%z'"
 
 update-zsh() {
 	emulate -L zsh
