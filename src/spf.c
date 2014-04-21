@@ -130,7 +130,28 @@ int main()
 
 	/* add header */
 	header = SPF_response_get_received_spf(spf_response);
-	printf("H%s\n", header);
+	if (header)
+		printf("H%s\n", header);
+	else {
+		fprintf(stderr, "spf: libspf2 library failed to produce Received-SPF header\n",
+			SPF_strerror(SPF_response_errcode(spf_response)));
+		/* Example taken from libspf2: */
+/*
+		fprintf ( stderr, "spf: diag: result = %s (%d)\n",
+		SPF_strresult(SPF_response_result(spf_response)),
+		SPF_response_result(spf_response));
+		fprintf ( stderr, "spf: diag: err = %s (%d)\n",
+			SPF_strerror(SPF_response_errcode(spf_response)),
+			SPF_response_errcode(spf_response));
+		for (i = 0; i < SPF_response_messages(spf_response); i++) {
+			SPF_error_t     *err = SPF_response_message(spf_response, i);
+			fprintf ( stderr, "spf: diag: %s_msg = (%d) %s\n",
+				(SPF_error_errorp(err) ? "warn" : "err"),
+				SPF_error_code(err),
+				SPF_error_message(err));
+		}
+*/
+	}
 
 	SPF_response_free(spf_response);
 	SPF_request_free(spf_request);
