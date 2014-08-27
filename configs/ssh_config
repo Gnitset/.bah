@@ -1,7 +1,12 @@
-Host wijk
-	HostName wijk.oijk.net
+Host krijk
+	HostName krijk.oijk.net
 	DynamicForward 12345
 	LocalForward 2525 localhost:25
+
+Host wijk
+	HostName wijk.oijk.net
+	DynamicForward 12346
+	LocalForward 2526 localhost:25
 
 Host bruse
 	HostName bruse.proxxi.org
