@@ -1,3 +1,0 @@
-#!/bin/sh
-
-echo -e "$@"\\nexit|sudo env LD_LIBRARY_PATH=/lib32/fulhack cli|sed -e 'ss^cli>ss'
