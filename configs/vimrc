@@ -49,3 +49,7 @@ function ToggleHex()
 endfunction
 
 command W :execute ':silent w !sudo tee % > /dev/null' | :edit!
+
+syntax on
+set background=dark
+set hlsearch
