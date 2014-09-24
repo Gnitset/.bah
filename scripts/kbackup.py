@@ -178,6 +178,7 @@ class KBackup():
 			print "cleanup"
 			os.spawnvp(os.P_WAIT, "rm", ["rm", "-r", new])
 			print self.host,"failed"
+			return
 
 		stime=time.time()
 		dirbase='/'.join([str(de).zfill(2) for de in time.localtime(stime)[0:3]])
