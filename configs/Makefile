@@ -1,7 +1,8 @@
 all:
-	@echo possible targets ssh screen mutt vim zsh minicom and install
+	@echo possible targets ssh screen mutt vim zsh minicom install and install-all
 
-install: ssh screen mutt vim zsh minicom psql
+install: ssh screen vim zsh
+install-all: ssh screen mutt vim zsh minicom psql
 
 ssh:
 	install -d -m 0755 ${HOME}/.ssh
