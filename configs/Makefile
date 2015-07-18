@@ -1,7 +1,7 @@
 all:
 	@echo possible targets ssh screen mutt vim zsh minicom and install
 
-install: ssh screen mutt vim zsh minicom
+install: ssh screen mutt vim zsh minicom psql
 
 ssh:
 	install -d -m 0755 ${HOME}/.ssh
@@ -28,3 +28,6 @@ zsh:
 
 minicom:
 	install -b -m 0644 minirc.dfl ${HOME}/.minirc.dfl
+
+psql:
+	install -b -m 0644 psqlrc ${HOME}/.psqlrc
