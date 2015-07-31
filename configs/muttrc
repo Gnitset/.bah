@@ -1,12 +1,12 @@
 set realname = 'Klas Meder Boqvist'
-set from = 'gnitset@servern.info'
+set from = 'SET EMAIL HERE'
 set beep = no
 set allow_8bit = yes
 ignore *
 unignore 'X-Spam-Status' 'Date' 'Subject' 'To' 'From' 'CC'
 set mime_forward=yes
 
-my_hdr Return-Path: gnitset@servern.info
+my_hdr Return-Path: SET EMAIL HERE
 
 set implicit_autoview
 auto_view text/html
