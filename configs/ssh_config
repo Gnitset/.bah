@@ -8,16 +8,13 @@ Host wijk
 	DynamicForward 12346
 	LocalForward 2526 localhost:25
 
-Host bruse
-	HostName bruse.proxxi.org
+Host github.com
+	User git
 	Port 22
 
 Host gate
 	HostName gate.ladan.se
 	DynamicForward 1080
-
-#Host *.ladan.se
-#	ProxyCommand connect -R remote -S localhost:1080 %h %p
 
 Host *
 	User gnitset
