@@ -1,3 +1,0 @@
-mdadm --create /dev/md0 --verbose --assume-clean --level=6 --raid-devices=9 /dev/hd[efghijklo]1
-mdadm --detail /dev/md0
-mdadm /dev/md0 -r /dev/sda1 -a /dev/sda1
