@@ -1,3 +1,4 @@
 openssl req -new -nodes -newkey rsa:2048 -keyout HOSTNAME.key -out HOSTNAME.csr
 openssl x509 -noout -text -in HOSTNAME.crt
 openssl req -x509 -nodes -days 1825 -newkey rsa:2048 -keyout HOSTNAME.key -out HOSTNAME.crt
+openssl req -subj '/C=MT/L=Valletta/O=Evoke Gaming Ltd/CN=*.egops.net/subjectAltName=DNS.1=*.egops.net,DNS.2=egops.net,DNS.3=*.spst1.egops.net' -new -nodes -newkey rsa:2048 -keyout wildcard_spst1_egops.net.key -out wildcard_spst1_egops.net.csr
