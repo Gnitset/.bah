@@ -15,4 +15,3 @@ def parse_config(filename, config=dict()):
 		else:
 			config[key]=value
 	return config
-
