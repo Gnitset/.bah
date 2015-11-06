@@ -7,3 +7,4 @@ multiuser off
 defscrollback 2048
 shell -zsh
 pow_detach_msg "Screen session of \$LOGNAME \$:cr:\$:nl:ended."
+#zombie kr

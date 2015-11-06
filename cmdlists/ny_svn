@@ -1,6 +1,0 @@
-svnadmin create /var/svn/repos/slug
-chmod -R g-w /var/svn/repos/slug
-chmod -R g+rw /var/svn/repos/slug/db /var/svn/repos/slug/locks
-chown -R apache:svnusers /var/svn/repos/
-vim /var/svn/conf/svnpolicy
-htpasswd2 /var/svn/conf/svnusers torandi

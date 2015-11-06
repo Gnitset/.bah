@@ -1,4 +1,6 @@
 pu port             /dev/ttyS0
+#pu port             /dev/ttyUSB0
+#pu port             /dev/cua0
 pu baudrate         9600
 pu minit            
 pu mreset           
