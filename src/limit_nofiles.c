@@ -1,10 +1,11 @@
 /*
  * Simple program to check ulimit nofile on a running process in OpenBSD
  *
- * gcc -O2 -pipe -lkvm -o limit_nofiles limit_nofiles.c
+ * gcc -Wall -O2 -pipe -lkvm -o limit_nofiles limit_nofiles.c
  *
  */
 
+#include <stdlib.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/user.h>
@@ -20,16 +21,15 @@ int main(int argc, char **argv) {
 	struct kinfo_proc *kp;
 	struct plimit pl;
 	kvm_t *kt;
-	int foo=0;
+	int cnt=0;
 
 	kt = kvm_open(NULL, NULL, NULL, O_RDONLY, "Error: ");
-
-	kp = kvm_getprocs(kt, KERN_PROC_PID, atoi(argv[1]), sizeof(*kp), &foo);
-
+	kp = kvm_getprocs(kt, KERN_PROC_PID, atoi(argv[1]), sizeof(*kp), &cnt);
 	kvm_read(kt, kp->p_limit, &pl, sizeof(pl));
 
 	printf("Current limit: %i\nHard limit: %i\n",
-		pl.pl_rlimit[RLIMIT_NOFILE].rlim_cur,
-		pl.pl_rlimit[RLIMIT_NOFILE].rlim_max);
+		(int)pl.pl_rlimit[RLIMIT_NOFILE].rlim_cur,
+		(int)pl.pl_rlimit[RLIMIT_NOFILE].rlim_max);
+
 	return 0;
 }
