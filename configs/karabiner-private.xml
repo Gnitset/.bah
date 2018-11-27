@@ -10,4 +10,28 @@
 			KeyCode::ENTER
 		</autogen>
 	</item>
+	<item>
+		<name>Fn+sazx as arrow keys</name>
+		<identifier>private.fnsazx</identifier>
+		<autogen>
+			__KeyToKey__
+			KeyCode::S, ModifierFlag::FN,
+			KeyCode::CURSOR_LEFT
+		</autogen>
+		<autogen>
+			__KeyToKey__
+			KeyCode::A, ModifierFlag::FN,
+			KeyCode::CURSOR_UP
+		</autogen>
+		<autogen>
+			__KeyToKey__
+			KeyCode::Z, ModifierFlag::FN,
+			KeyCode::CURSOR_DOWN
+		</autogen>
+		<autogen>
+			__KeyToKey__
+			KeyCode::X, ModifierFlag::FN,
+			KeyCode::CURSOR_RIGHT
+		</autogen>
+	</item>
 </root>
