@@ -51,10 +51,8 @@ bindkey "\e[6~" history-beginning-search-forward  # pgdn
 
 alias py=python
 alias find='noglob find'
-alias koi='ssh krijk -t screen -UDr'
 alias ts="date '+%FT%T.%N%z'"
 alias cvim="vim -c 'set autoindent' -c 'set number'"
-alias cim="vim -c 'set autoindent' -c 'set number'"
 
 precmd() {
 	if [ "$TERM" != "linux" ]; then

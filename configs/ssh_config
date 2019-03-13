@@ -1,14 +1,10 @@
-Host krijk
-	HostName krijk.oijk.net
-	DynamicForward 12345
-
 Host github.com
 	User git
 	Port 22
 
-Host gate
-	HostName gate.ladan.se
-	DynamicForward 1080
+Host 172.16.* 172.17.* 10.* *.local !10.10.* !10.11.*
+	User adm-klasmb
+	Port 22
 
 Host *
 	User gnitset
