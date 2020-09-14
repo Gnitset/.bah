@@ -2,7 +2,7 @@ Host github.com
 	User git
 	Port 22
 
-Host 172.16.* 172.17.* 10.* *.local !10.10.* !10.11.*
+Host 172.16.* 172.17.* 10.* 100.100.* *.local !10.10.* !10.11.*
 	User adm-klasmb
 	Port 22
 
