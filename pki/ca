@@ -7,7 +7,7 @@ export INTERMEDIATE_CA=SE
 # generate root ca:
 openssl genrsa -aes256 -out CA/ROOT/ca.key 2048
 openssl req -days 7300 -new -sha1 -x509 -key CA/ROOT/ca.key -out CA/ROOT/ca.crt -config openssl.cfg
-# Redbet Gaming Ltd - IT Operations Root CA
+# Oijk - IT Operations Root CA
 
 # create files needed for ca:
 touch CA/ROOT/index.txt
@@ -19,7 +19,7 @@ mkdir -p CA/${INTERMEDIATE_CA}
 # generate intermediate ca csr:
 openssl genrsa -aes256 -out CA/${INTERMEDIATE_CA}/ca.key 2048
 openssl req -days 2920 -extensions v3_req_intermediate -new -sha1 -key CA/${INTERMEDIATE_CA}/ca.key -out CA/${INTERMEDIATE_CA}/ca.csr -config openssl.cfg
-# Redbet Gaming Ltd - IT Operations Sweden CA
+# Oijk - IT Operations Sweden CA
 
 # sign the intermediate ca:
 openssl ca -config openssl.cfg -name CA_Root -in CA/${INTERMEDIATE_CA}/ca.csr -out CA/${INTERMEDIATE_CA}/ca.crt -cert CA/ROOT/ca.crt -keyfile CA/ROOT/ca.key 
@@ -32,23 +32,23 @@ echo 01 > CA/${INTERMEDIATE_CA}/serial
 mkdir -p certs/${INTERMEDIATE_CA}
 
 # generate csr fo server cert:
-openssl genrsa -aes256 -out certs/${INTERMEDIATE_CA}/docs.rbops.net.key 2048
-openssl req -new -sha1 -key certs/${INTERMEDIATE_CA}/docs.rbops.net.key -out certs/${INTERMEDIATE_CA}/docs.rbops.net.csr -config openssl.cfg
+openssl genrsa -aes256 -out certs/${INTERMEDIATE_CA}/docs.oijk.net.key 2048
+openssl req -new -sha1 -key certs/${INTERMEDIATE_CA}/docs.oijk.net.key -out certs/${INTERMEDIATE_CA}/docs.oijk.net.csr -config openssl.cfg
 
 # sign the cert under the intermediate ca:
-openssl ca -config openssl.cfg -name CA_Intermediate -in certs/${INTERMEDIATE_CA}/docs.rbops.net.csr -out certs/${INTERMEDIATE_CA}/docs.rbops.net.crt -cert CA/${INTERMEDIATE_CA}/ca.crt -keyfile CA/${INTERMEDIATE_CA}/ca.key
-openssl ca -config openssl.cfg -name CA_Intermediate_Client -in certs/${INTERMEDIATE_CA}/docs.rbops.net.csr -out certs/${INTERMEDIATE_CA}/docs.rbops.net.crt -cert CA/${INTERMEDIATE_CA}/ca.crt -keyfile CA/${INTERMEDIATE_CA}/ca.key
+openssl ca -config openssl.cfg -name CA_Intermediate -in certs/${INTERMEDIATE_CA}/docs.oijk.net.csr -out certs/${INTERMEDIATE_CA}/docs.oijk.net.crt -cert CA/${INTERMEDIATE_CA}/ca.crt -keyfile CA/${INTERMEDIATE_CA}/ca.key
+openssl ca -config openssl.cfg -name CA_Intermediate_Client -in certs/${INTERMEDIATE_CA}/docs.oijk.net.csr -out certs/${INTERMEDIATE_CA}/docs.oijk.net.crt -cert CA/${INTERMEDIATE_CA}/ca.crt -keyfile CA/${INTERMEDIATE_CA}/ca.key
 
 # test the ca:
-openssl s_server -accept 8080 -cert certs/${INTERMEDIATE_CA}/docs.rbops.net.crt -key certs/${INTERMEDIATE_CA}/docs.rbops.net.key -CAfile CA/${INTERMEDIATE_CA}/ca.crt -www
-echo 127.0.0.1 docs.rbops.net >> /etc/hosts
-curl --cacert CA/ROOT/ca.crt https://docs.rbops.net:8080/
+openssl s_server -accept 8080 -cert certs/${INTERMEDIATE_CA}/docs.oijk.net.crt -key certs/${INTERMEDIATE_CA}/docs.oijk.net.key -CAfile CA/${INTERMEDIATE_CA}/ca.crt -www
+echo 127.0.0.1 docs.oijk.net >> /etc/hosts
+curl --cacert CA/ROOT/ca.crt https://docs.oijk.net:8080/
 
 # look in a csr:
-openssl req -text -noout -in certs/${INTERMEDIATE_CA}/docs.rbops.net.csr
+openssl req -text -noout -in certs/${INTERMEDIATE_CA}/docs.oijk.net.csr
 
 # revoke a cert:
-openssl ca -revoke certs/${INTERMEDIATE_CA}/docs.rbops.net.crt -config openssl.cfg
+openssl ca -revoke certs/${INTERMEDIATE_CA}/docs.oijk.net.crt -config openssl.cfg
 
 # generate new crl:
 mkdir -p CA/crl

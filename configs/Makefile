@@ -1,8 +1,8 @@
 all:
-	@echo possible targets ssh screen mutt vim zsh minicom psql install and install-all
+	@echo possible targets ssh screen mutt vim zsh psql install and install-all
 
 install: ssh screen vim zsh psql
-install-all: ssh screen mutt vim zsh minicom psql
+install-all: ssh screen mutt vim zsh psql
 
 ssh:
 	install -d -m 0755 ${HOME}/.ssh
@@ -26,9 +26,6 @@ zsh:
 	zsh -c 'zcompile ${HOME}/.zprofile' 2> /dev/null || exit 0
 	zsh -c 'zcompile ${HOME}/.zshrc.local' 2> /dev/null || exit 0
 	zsh -c 'zcompile ${HOME}/.zprofile.local' 2> /dev/null || exit 0
-
-minicom:
-	install -b -m 0644 minirc.dfl ${HOME}/.minirc.dfl
 
 psql:
 	install -b -m 0644 psqlrc ${HOME}/.psqlrc

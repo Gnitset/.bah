@@ -1,8 +1,0 @@
-#!/usr/bin/env expect
-
-eval spawn telnet $argv;
-
-interact {
-	"\033\1333~"	{send "\u007f"}
-	"\177"		{send "\u0008"}
-}

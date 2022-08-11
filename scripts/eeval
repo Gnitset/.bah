@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 # Nej den liknar inte den riktiga eeval, den evalar inte ens ngt, men den GER liknande info i outputen
-# använd typ $ eeval $((42*18))  (shellen förstör ju allt hsh, så det är nästan lika bra..)
+# anvÃ¤nd typ $ eeval $((42*18))  (shellen fÃ¶rstÃ¶r ju allt hsh, sÃ¥ det Ã¤r nÃ¤stan lika bra..)
 
 import sys
 

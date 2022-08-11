@@ -49,7 +49,7 @@ bindkey "\e[6~" history-beginning-search-forward  # pgdn
 #bindkey "\eOd" backward-word
 #bindkey "\eOc" forward-word
 
-alias py=python
+alias py=python3
 alias find='noglob find'
 alias ts="date '+%FT%T.%N%z'"
 alias cvim="vim -c 'set autoindent' -c 'set number'"
