@@ -1,5 +1,10 @@
 # ~/.zshrc
-# $Id$
+
+setopt ALL_EXPORT
+PROMPT=$'%{\e[32;1m%}%n@%5m%{\e[m%} %{\e[33;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[33;1m%}%T%{\e[m%} %{\e[31m%}%# %{\e[m%}'
+[[ $(print -P "%#") == '#' ]] && PROMPT=$'%{\e[31;1m%}%n%{\e[m%}%{\e[32;1m%}@%5m%{\e[m%} %{\e[33;1m%}%y%{\e[m%} %{\e[31;1m%}%~%{\e[m%}\n%1(j:%{\e[33;1m%}:%{\e[32;1m%})[%j]%{\e[m%} %{\e[33;1m%}%T%{\e[m%} %{\e[31;1m%}%# %{\e[m%}'
+RPROMPT=$'%{\e[31m%}%# %{\e[m%}%{\e[33;1m%}%D{%a %d %b %G}%{\e[m%} %0(?:%{\e[32;1m%}:%{\e[31m%})[%?]%{\e[m%}'
+unsetopt ALL_EXPORT
 
 setopt NO_PROMPT_CR
 setopt NO_BEEP
