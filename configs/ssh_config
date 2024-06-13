@@ -1,12 +1,18 @@
+Include ~/.ssh/config.local
+
 Host github.com
 	User git
 	Port 22
 
+Host *.ladan.se 10.* *.oijk.net *.fakefarmen.se 91.208.81.*
+	ForwardAgent yes
+
 Host *
+#	IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+#	IdentityAgent ~/.gnupg/S.gpg-agent.ssh
 	User gnitset
 	Port 222
 	HashKnownHosts yes
-	ForwardAgent yes
 	ControlMaster auto
 	ControlPath ~/.ssh/master-%r@%h:%p
 	VisualHostKey yes
