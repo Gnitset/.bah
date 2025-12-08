@@ -197,7 +197,6 @@ brew_cask:
 		homebrew/cask/thonny \
 		homebrew/cask/vnc-viewer \
 		homebrew/cask/wireshark-app \
-		homebrew/cask/yubico-yubikey-manager \
 		--cask
 
 brew_formulae:
